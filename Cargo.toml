@@ -1,0 +1,12 @@
+[package]
+name = "dama"
+version = "0.1.0"
+authors = ["Andrea Piseri <andrea.piseri@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gtk = "0.9.2"
+relm = "0.21.0"
+relm-derive = "0.21.0"
