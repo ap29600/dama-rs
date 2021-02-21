@@ -47,22 +47,33 @@ but in the future its default location will be `$XDG_CONFIG_HOME/dama/config.jso
 Available entries are of types:
 
 ```json
-{"Notebook" : [/* list of children*/]},
+{"Notebook" : [
+      // list of children
+]},
 
-{"Box": ["Vertical", // or  Horizontal
-      [/*list of children*/]
+{"Box": ["Vertical", 
+          // or  Horizontal
+      [
+        // list of children
+      ]
 ]},
 
 {"Label": ["some text"]},
 
 {"Button": ["the button's label", 
-    "notify-send \"click!\""]}, // the command to be executed
+            "notify-send \"click!\""]
+            // the command to be executed on click 
+}, 
 
-{"Scale": [0.0,   // the minimum value
-           100.0, // the maximum value
-           "xbacklight -set"] // the command to be executed when the slider is moved.
-}                             // the current value of the slider is added to the end 
-                              // of this string, rounded to an integer.
+{"Scale": [0.0,   
+           // the minimum value
+           100.0,  
+           // the maximum value
+           "xbacklight -set"] 
+           // the command to be executed when the slider is moved.
+           // the current value of the slider is added to the end                               
+           // of this string, rounded to an integer.
+}                             
 ```
 
 all commands are executed with `sh -c`.
