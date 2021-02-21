@@ -16,7 +16,7 @@ lightweight window managers in order to change settings on the fly.
 
 - [x] correctly render hardcoded components
 - [x] parse components from a `json` file at startup
-- [] interact with provided scripts
+- [ ] interact with provided scripts
   - [x] execute commands (e.g. change brightness with a slider)
   - [ ] get values back from commands (e.g. set the correct value for the brightness slider at startup)
 - [ ] add support for image widgets
@@ -37,7 +37,7 @@ A makefile will be provided in the near future.
 ## writing your own menu entries
 
 menu entries are read from a file called `dama.json` in the directory you launch the executable in,
-but in the future its default location will be `XDG_CONFIG_HOME/dama/config.json`.
+but in the future its default location will be `$XDG_CONFIG_HOME/dama/config.json`.
 
 Available entries are of types:
 
