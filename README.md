@@ -11,6 +11,11 @@ I intend for this to become a usable menu, but it might take a while for me to g
 This program aims to be a hackable, easy to use menu that can be paired to 
 lightweight window managers in order to change settings on the fly.
 
+## Looks
+
+here's a screenshot with the `adapta` gtk theme
+
+![](assets/screenshot.png)
 
 ## feature roadmap
 
