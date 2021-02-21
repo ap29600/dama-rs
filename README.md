@@ -14,9 +14,9 @@ lightweight window managers in order to change settings on the fly.
 
 ## feature roadmap
 
-[x] correctly render hardcoded components
-[ ] parse components from a `json` file at startup
-[ ] interact with provided scripts (e.g. set the correct value for the brightness slider at startup)
+- [x] correctly render hardcoded components
+- [ ] parse components from a `json` file at startup
+- [ ] interact with provided scripts (e.g. set the correct value for the brightness slider at startup)
 
 ## Dependencies
 
