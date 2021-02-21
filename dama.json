@@ -1,0 +1,18 @@
+{"Notebook": [
+  {"Box": 
+    ["Vertical",
+      [{"Box": 
+        ["Horizontal",
+          [{"Button": ["hello", "notify-send hello"]},
+            {"Button": ["world", "notify-send world"]},
+            {"Label": "some <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"}]
+        ]},
+        {"Scale": [0.0, 100.0,"xbacklight -set"]}
+      ]
+    ]},
+    {"Box":
+      ["Vertical",
+        [{"Label":"<big><b>Dama Menu</b></big>\n(Desktop Agnostic Menu Aggregate)\nIs a simple desktop menu that aims to bring together all the common configuration options that people usually control with scripts, by allowing the user to call those same scripts. It is available <a href=\"https://github.com/ap29600/dama-rs\">here</a>."}]
+      ]
+    }
+]}
