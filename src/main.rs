@@ -2,7 +2,7 @@ use gtk::{ApplicationWindow, Application};
 use gtk::prelude::*;
 use gio::prelude::*;
 
-use std::io::prelude::*;
+use std::{fmt::Debug, io::prelude::*, str::FromStr};
 use std::fs::File;
 use serde_derive::{Serialize, Deserialize};
 
@@ -20,7 +20,24 @@ enum SeralizableWidget {
     Box(Orientation, Vec<SeralizableWidget>),
     Label(String),
     Button(String, String), // label, command
-    Scale(f64, f64, String), // min, max, command
+    Scale(f64, f64, String, String), // min, max, initialize, update
+}
+
+
+fn read_value_from_command <T> (command: String, default: T) -> T 
+    where T: std::str::FromStr, <T as FromStr>::Err: Debug {
+    match std::process::Command::new("sh").arg("-c").arg(command).output() {
+        Err(e) => { println!("error while running command: {}", e); default },
+        Ok(std::process::Output{status: _ , stdout: utf_8_vec, stderr: _}) => 
+            match String::from_utf8(utf_8_vec.iter().take_while(|&c| {*c != '\n' as u8}).map(|&c| c).collect()) { // this is very ugly, but it avoids parse() failing with newlines
+                Err(e) => { println!("error while making a string: {}", e); default },
+                Ok(string) => 
+                    match string.parse() {
+                        Err(e) => { println!("error while parsing string \"{}\" {:?}",string,  e); default },
+                        Ok(value) => value
+                    }
+            }
+    }
 }
 
 
@@ -62,15 +79,14 @@ impl Attach for gtk::Box {
                 l.set_line_wrap(true);
                 self.add(&l);
             }
-            SeralizableWidget::Scale(start, end, command) => {
-                let l = gtk::Scale::with_range(
-                    gtk::Orientation::Horizontal, 
-                    start, 
-                    end, 
-                    1.);
+            SeralizableWidget::Scale(start, end, initialize, update) => {
+                let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 1.);
+
+                l.set_value(read_value_from_command::<f64>(initialize, start));
+
                 l.connect_change_value(
                     move |_, _, new_value| {std::process::Command::new("sh").arg("-c")
-                            .arg(format!("{} {}", command.clone(), new_value as i32))
+                            .arg(format!("{} {}", update.clone(), new_value as i32))
                             .spawn().unwrap();
                         Inhibit(false)
                     });
@@ -115,29 +131,13 @@ impl Attach for ApplicationWindow {
 
 
 fn build_ui(app: &Application, source: &str) {
-
-
     let win = ApplicationWindow::new(app);
     win.set_title("Dama - Menu");
     win.set_border_width(10);
    
-    let otherwidget = SeralizableWidget::Box(Orientation::Vertical, vec![]);
-    let s = serde_json::to_string_pretty(&otherwidget).unwrap();
-    println!("{}", s);
-    
     win.set_position(gtk::WindowPosition::Center);
     let mywidget: SeralizableWidget = serde_json::from_str(source).unwrap();
-//  let mywidget: SeralizableWidget = SeralizableWidget::Notebook(
-//      vec![
-//      SeralizableWidget::Box(
-//          vec! [
-//          SeralizableWidget::Button("hello".to_string(), "notify-send world".to_string()),
-//          SeralizableWidget::Label("some label".to_string()),
-//          SeralizableWidget::Scale(0., 100., "notify-send".to_string()),
-//          ])
-//      ]);
-    
-
+   
     win.attach(mywidget);
     win.show_all();
 }

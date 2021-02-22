@@ -7,7 +7,7 @@
             {"Button": ["world", "notify-send world"]},
             {"Label": "some <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"}]
         ]},
-        {"Scale": [0.0, 100.0,"xbacklight -set"]}
+        {"Scale": [0.0, 100.0,"xbacklight -get", "xbacklight -set"]}
       ]
     ]},
     {"Box":

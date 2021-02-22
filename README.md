@@ -21,10 +21,11 @@ here's a screenshot with the `adapta` gtk theme
 
 - [x] correctly render hardcoded components
 - [x] parse components from a `json` file at startup
-- [ ] interact with provided scripts
+- [X] interact with provided scripts
   - [x] execute commands (e.g. change brightness with a slider)
-  - [ ] get values back from commands (e.g. set the correct value for the brightness slider at startup)
+  - [X] get values back from commands (e.g. set the correct value for the brightness slider at startup)
 - [ ] add support for image widgets
+- [ ] add support for checkbox widgets
 - [ ] style the layout in a sensible way
   - [ ] allow setting names for tabs
   - [ ] move the tab list to the side
@@ -69,6 +70,9 @@ Available entries are of types:
            // the minimum value
            100.0,  
            // the maximum value
+           "xbacklight -get",
+           // the command to run in order to get the initial value.
+           // this will be clamped between maximum and minimum values.
            "xbacklight -set"] 
            // the command to be executed when the slider is moved.
            // the current value of the slider is added to the end                               
@@ -78,5 +82,5 @@ Available entries are of types:
 
 all commands are executed with `sh -c`.
 
-The top-level object must be of type `Notebook`, but nesting is not restricted beyond that.
+The top-level object must be of type `Notebook`, and a `Notebook`'s children must be `Box`, but nesting is not restricted beyond that.
 
