@@ -50,11 +50,14 @@ impl<T> AddFromSerializable for T
     fn add_from(&self, obj: SerializableWidget) {
         match obj {
             SerializableWidget::Box(name, orientation, elements) => {
-                let nb = gtk::Box::new(orientation.into(), 12);
+                let b = gtk::Box::new(orientation.into(), match orientation {
+                    Orientation::Horizontal => 20,
+                    Orientation::Vertical   => 0 });
+                b.set_border_width(10);
                 for element in elements {
-                    nb.add_from(element);
+                    b.add_from(element);
                 }
-                self.add_maybe_with_label(&nb, Some(&*name));
+                self.add_maybe_with_label(&b, Some(&*name));
             }
             SerializableWidget::Notebook(v) => {
                 let nb = gtk::Notebook::new();
@@ -77,7 +80,7 @@ impl<T> AddFromSerializable for T
             SerializableWidget::Scale(start, end, initialize, update) => {
                 let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 1.);
                 l.set_value(read_value_from_command::<f64>(initialize, start));
-                l.set_hexpand(true);
+                l.set_size_request(200, 12);
                 l.connect_change_value(
                     move |_, _, new_value| { 
                         execute_shell_command( format!("{} {}", update.clone(), new_value as i32));
