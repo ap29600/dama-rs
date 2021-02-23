@@ -29,7 +29,25 @@ fn build_ui(app: &Application, source: &str) {
 
 
 fn main() -> std::io::Result<()> {
-    let mut f = File::open("dama.json")?; 
+    let home_path = std::env::var("HOME").unwrap();
+    let fallback_config_path = home_path.clone() + "/.config";
+    let config_path = match std::env::var("XDG_CONFIG_HOME") {
+        Ok(f) => f,
+        _     => fallback_config_path.clone()
+    };
+    
+    // very ugly, there must be a way to chain these more cleanly
+    let mut f = match File::open(config_path + "/dama.json") {
+        Ok(f) => f,
+        _     => match File::open(fallback_config_path + "/dama.json") {
+            Ok(f) => f,
+            _     => match File::open(home_path + "/.dama.json") {
+                Ok(f) => f,
+                _     => panic!("could not find a suitable config file")
+            }
+        }
+    };
+
     let mut source = String::new();
     f.read_to_string(&mut source)? ;
     let app = match Application::new(Some("com.andrea.example"), Default::default()) {
