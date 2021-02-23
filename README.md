@@ -82,5 +82,3 @@ Available entries are of types:
 
 all commands are executed with `sh -c`.
 
-The top-level object must be of type `Notebook`, and a `Notebook`'s children must be `Box`, but nesting is not restricted beyond that.
-

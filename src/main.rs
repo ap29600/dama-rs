@@ -41,12 +41,13 @@ fn read_value_from_command <T> (command: String, default: T) -> T
 }
 
 
-trait Attach {
-    fn attach (&self, obj: SeralizableWidget );
+trait AddFromSerializable {
+    fn add_from(&self, obj: SeralizableWidget );
 }
 
-impl Attach for gtk::Box {
-    fn attach(&self, obj: SeralizableWidget) {
+impl<T> AddFromSerializable for T 
+    where T: ContainerExt {
+    fn add_from(&self, obj: SeralizableWidget) {
         match obj {
             SeralizableWidget::Box(orientation, elements) => {
                 let nb = gtk::Box::new(match orientation {
@@ -54,14 +55,14 @@ impl Attach for gtk::Box {
                     Orientation::Horizontal => gtk::Orientation::Horizontal,}
                     , 12);
                 for element in elements {
-                    nb.attach(element);
+                    nb.add_from(element);
                 }
                 self.add(&nb);
             }
             SeralizableWidget::Notebook(v) => {
                 let nb = gtk::Notebook::new();
                 for elem in v {
-                    nb.attach(elem);
+                    nb.add_from(elem);
                 }
                 self.add(&nb);
             }
@@ -95,39 +96,6 @@ impl Attach for gtk::Box {
         }
     }
 }
-impl Attach for gtk::Notebook {
-    fn attach(&self, obj: SeralizableWidget) {
-        match obj {
-            SeralizableWidget::Box(orientation, elements) => {
-                let nb = gtk::Box::new(match orientation {
-                    Orientation::Vertical => gtk::Orientation::Vertical,
-                    Orientation::Horizontal => gtk::Orientation::Horizontal,
-                }, 12);
-                for element in elements {
-                    nb.attach(element);
-                }
-                self.add(&nb);
-            }
-            _ => {}
-        }
-    }
-}
-
-impl Attach for ApplicationWindow {
-    fn attach(&self, obj: SeralizableWidget) {
-        match obj {
-            SeralizableWidget::Notebook(v) => {
-                let nb = gtk::Notebook::new();
-                for elem in v {
-                    nb.attach(elem);
-                }
-                self.add(&nb);
-            }
-            _ => {}
-        }
-    }
-}
-
 
 
 fn build_ui(app: &Application, source: &str) {
@@ -138,7 +106,7 @@ fn build_ui(app: &Application, source: &str) {
     win.set_position(gtk::WindowPosition::Center);
     let mywidget: SeralizableWidget = serde_json::from_str(source).unwrap();
    
-    win.attach(mywidget);
+    win.add_from(mywidget);
     win.show_all();
 }
 
