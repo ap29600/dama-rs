@@ -1,6 +1,8 @@
 use std::{fmt::Debug, str::FromStr};
 use std::process::{Command, Output};
 
+use crate::structs::{Orientation, SerializableWidget};
+
 pub fn read_value_from_command <T> (command: String, default: T) -> T 
     where T: std::str::FromStr, <T as FromStr>::Err: Debug {
     match Command::new("sh").arg("-c").arg(command).output() {
@@ -25,10 +27,19 @@ pub fn read_value_from_command <T> (command: String, default: T) -> T
     }
 }
 
+
 pub fn execute_shell_command(command: String) {
     match std::process::Command::new("sh").arg("-c")
         .arg(command.clone()).spawn() {
             Ok(_) => (),
             Err(e) => eprint!("{}", e)
         }
+}
+
+pub fn generate_fallback_layout(text: String) -> SerializableWidget {
+    SerializableWidget::Notebook(vec![ 
+         SerializableWidget::Box("default message".to_string(), Orientation::Horizontal, vec![
+            SerializableWidget::Label(text)
+         ])
+    ])
 }

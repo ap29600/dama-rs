@@ -3,26 +3,32 @@ use super::helper::*;
 use super::structs::*;
 
 pub trait AddFromSerializable {
-    fn add_from(&self, obj: SeralizableWidget );
+    fn add_from(&self, obj: SerializableWidget );
 }
 
-pub trait ContainerMaybeLabel {
+// dirty workaround to avoid ahving to use specialization, which currently is unstable.
+// it would be ideal for `add_maybe_with_label()` to be a method of AddFromSerializable,
+// implemented differently for Notebook.
+pub trait ContainerMaybeWithLabel {
     fn add_maybe_with_label<W: IsA<gtk::Widget>> (&self, element: &W, label: Option<&str>);
 }
 
-impl ContainerMaybeLabel for gtk::Notebook {
+impl ContainerMaybeWithLabel for gtk::Notebook {
+    // if the parent is a notebook, we use the label as a name for the tab
     fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, label: Option<&str>) {
         self.append_page(element, Some(& gtk::Label::new(label)));
     }
 }
 
-impl ContainerMaybeLabel for gtk::ApplicationWindow {
+impl ContainerMaybeWithLabel for gtk::ApplicationWindow {
+    // otherwise, ignore the label
     fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, _label: Option<&str>) {
         self.add(element);
     }
 }
 
-impl ContainerMaybeLabel for gtk::Box {
+impl ContainerMaybeWithLabel for gtk::Box {
+    // same here
     fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, _label: Option<&str>) {
         self.add(element);
     }
@@ -40,35 +46,35 @@ impl Into<gtk::Orientation> for Orientation {
 }
 
 impl<T> AddFromSerializable for T 
-    where T: ContainerExt, T:ContainerMaybeLabel {
-    fn add_from(&self, obj: SeralizableWidget) {
+    where T: ContainerExt, T:ContainerMaybeWithLabel {
+    fn add_from(&self, obj: SerializableWidget) {
         match obj {
-            SeralizableWidget::Box(name, orientation, elements) => {
+            SerializableWidget::Box(name, orientation, elements) => {
                 let nb = gtk::Box::new(orientation.into(), 12);
                 for element in elements {
                     nb.add_from(element);
                 }
                 self.add_maybe_with_label(&nb, Some(&*name));
             }
-            SeralizableWidget::Notebook(v) => {
+            SerializableWidget::Notebook(v) => {
                 let nb = gtk::Notebook::new();
                 for elem in v {
                     nb.add_from(elem);
                 }
                 self.add(&nb)
             }
-            SeralizableWidget::Button(label, command) => {
+            SerializableWidget::Button(label, command) => {
                 let b = gtk::Button::with_label(&*label);
                 b.connect_clicked( move |_| execute_shell_command (command.clone()) );
                 self.add(&b);
             }
-            SeralizableWidget::Label(label) => {
+            SerializableWidget::Label(label) => {
                 let l = gtk::Label::new(None);
                 l.set_markup(&*label);
                 l.set_line_wrap(true);
                 self.add(&l);
             }
-            SeralizableWidget::Scale(start, end, initialize, update) => {
+            SerializableWidget::Scale(start, end, initialize, update) => {
                 let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 1.);
                 l.set_value(read_value_from_command::<f64>(initialize, start));
                 l.set_hexpand(true);

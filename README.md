@@ -21,6 +21,7 @@ here's a screenshot with the `adapta` gtk theme
 
 - [x] correctly render hardcoded components
 - [x] parse components from a `json` file at startup
+  - [x] look in multiple locations before giving up
 - [X] interact with provided scripts
   - [x] execute commands (e.g. change brightness with a slider)
   - [X] get values back from commands (e.g. set the correct value for the brightness slider at startup)
@@ -42,8 +43,11 @@ A makefile will be provided in the near future.
 
 ## writing your own menu entries
 
-menu entries are read from a file called `dama.json` in the directory you launch the executable in,
-but in the future its default location will be `$XDG_CONFIG_HOME/dama/config.json`.
+menu entries are read from a file called `dama.json`.
+The program will look for it in `$XDG_CONFIG_HOME/dama/config.json` 
+if the variable is set, or in `$HOME/.config/dama.json` if it is not.
+
+if that file doesn't exist, dama will try to read from `$HOME/.dama.json`.
 
 Available entries are of types:
 
