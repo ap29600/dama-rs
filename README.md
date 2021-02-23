@@ -48,8 +48,8 @@ make install
 ## writing your own menu entries
 
 menu entries are read from a file called `dama.json`.
-The program will look for it in `$XDG_CONFIG_HOME/dama/config.json` 
-if the variable is set, or in `$HOME/.config/dama.json` if it is not.
+The program will look for it in `$XDG_CONFIG_HOME` 
+if the variable is set, or in `$HOME/.config` if it is not.
 
 if that file doesn't exist, dama will try to read from `$HOME/.dama.json`.
 
