@@ -53,13 +53,13 @@ Available entries are of types:
 ]},
 
 {"Box": [ "name", 
-		  // this is used to set the tab's name if the box 
-		  // is a direct child of a notebook.
-		  // Otherwise, it is ignored and can be left empty.
-		"Vertical", 
+	  // this is used to set the tab's name if the box 
+	  // is a direct child of a notebook.
+	  // Otherwise, it is ignored and can be left empty.
+	  "Vertical", 
           // or  Horizontal
       [
-        // list of children
+	  // list of children
       ]
 ]},
 
