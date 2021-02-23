@@ -27,7 +27,7 @@ here's a screenshot with the `adapta` gtk theme
 - [ ] add support for image widgets
 - [ ] add support for checkbox widgets
 - [ ] style the layout in a sensible way
-  - [ ] allow setting names for tabs
+  - [x] allow setting names for tabs
   - [ ] move the tab list to the side
   - [ ] make sliders fill all horizontal available space
 
@@ -47,12 +47,16 @@ but in the future its default location will be `$XDG_CONFIG_HOME/dama/config.jso
 
 Available entries are of types:
 
-```json
+```
 {"Notebook" : [
       // list of children
 ]},
 
-{"Box": ["Vertical", 
+{"Box": [ "name", 
+		  // this is used to set the tab's name if the box 
+		  // is a direct child of a notebook.
+		  // Otherwise, it is ignored and can be left empty.
+		"Vertical", 
           // or  Horizontal
       [
         // list of children

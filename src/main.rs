@@ -2,6 +2,8 @@ use gtk::{ApplicationWindow, Application};
 use gtk::prelude::*;
 use gio::prelude::*;
 
+use gtk::prelude::IsA;
+
 use std::{fmt::Debug, io::prelude::*, str::FromStr};
 use std::fs::File;
 use serde_derive::{Serialize, Deserialize};
@@ -17,7 +19,7 @@ enum Orientation {
 #[derive(Serialize, Deserialize)]
 enum SeralizableWidget {
     Notebook(Vec<SeralizableWidget>),
-    Box(Orientation, Vec<SeralizableWidget>),
+    Box(String, Orientation, Vec<SeralizableWidget>),
     Label(String),
     Button(String, String), // label, command
     Scale(f64, f64, String, String), // min, max, initialize, update
@@ -45,11 +47,35 @@ trait AddFromSerializable {
     fn add_from(&self, obj: SeralizableWidget );
 }
 
+trait ContainerMaybeLabel {
+    fn add_maybe_with_label<W: IsA<gtk::Widget>> (&self, element: &W, label: Option<&str>);
+}
+
+
+impl ContainerMaybeLabel for gtk::Notebook {
+    fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, label: Option<&str>) {
+        self.append_page(element, Some(& gtk::Label::new(label)));
+    }
+}
+
+impl ContainerMaybeLabel for gtk::ApplicationWindow {
+    fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, _label: Option<&str>) {
+        self.add(element);
+    }
+}
+
+impl ContainerMaybeLabel for gtk::Box {
+    fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, _label: Option<&str>) {
+        self.add(element);
+    }
+}
+
+
 impl<T> AddFromSerializable for T 
-    where T: ContainerExt {
+    where T: ContainerExt, T:ContainerMaybeLabel {
     fn add_from(&self, obj: SeralizableWidget) {
         match obj {
-            SeralizableWidget::Box(orientation, elements) => {
+            SeralizableWidget::Box(name, orientation, elements) => {
                 let nb = gtk::Box::new(match orientation {
                     Orientation::Vertical => gtk::Orientation::Vertical,
                     Orientation::Horizontal => gtk::Orientation::Horizontal,}
@@ -57,14 +83,14 @@ impl<T> AddFromSerializable for T
                 for element in elements {
                     nb.add_from(element);
                 }
-                self.add(&nb);
+                self.add_maybe_with_label(&nb, Some(&*name));
             }
             SeralizableWidget::Notebook(v) => {
                 let nb = gtk::Notebook::new();
                 for elem in v {
                     nb.add_from(elem);
                 }
-                self.add(&nb);
+                self.add(&nb)
             }
             SeralizableWidget::Button(label, command) => {
                 let b = gtk::Button::with_label(&*label);
