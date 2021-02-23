@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=0.1.0
+Name=Dama menu
+GenericName=Settings menu
+Comment=Manage your settings
+Exec=/usr/local/bin/dama
+Type=Application

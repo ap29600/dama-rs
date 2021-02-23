@@ -39,7 +39,11 @@ Dama is built with rust, using the `gtk` crate and uses `cargo` to manage the bu
 
 ## Installation
 
-A makefile will be provided in the near future.
+
+just run the command:
+```
+make install
+```
 
 ## writing your own menu entries
 
