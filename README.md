@@ -29,7 +29,7 @@ here's a screenshot with the `adapta` gtk theme
 - [ ] style the layout in a sensible way
   - [x] allow setting names for tabs
   - [ ] move the tab list to the side
-  - [ ] make sliders fill all horizontal available space
+  - [x] make sliders fill all horizontal available space
 
 
 ## Dependencies
