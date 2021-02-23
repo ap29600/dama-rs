@@ -3,11 +3,16 @@
     ["Brightness and notifications", "Vertical",
       [{"Box": 
         [ "", "Horizontal",
-          [{"Button": ["hello", "notify-send hello"]},
-            {"Button": ["world", "notify-send world"]},
-            {"Label": "some <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"}]
+          [{"Label": "Some buttons to launch the missiles"},
+            {"Button": ["hello", "notify-send hello"]},
+            {"Button": ["world", "notify-send world"]}]
         ]},
-        {"Scale": [0.0, 100.0,"xbacklight -get", "xbacklight -set"]}
+        {"Box": ["", "Horizontal",
+              [{"Label": "A <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"}]
+        ]},
+        {"Box" : ["", "Horizontal", [{"Label": "A slider to control backlight!"},
+                                   {"Scale": [0.0, 100.0,"xbacklight -get", "xbacklight -set"]}]
+        ]}
       ]
     ]},
     {"Box":
