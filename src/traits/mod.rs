@@ -78,12 +78,14 @@ impl<T> AddFromSerializable for T
                 self.add(&l);
             }
             SerializableWidget::Scale(start, end, initialize, update) => {
-                let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 1.);
+                let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 5.);
                 l.set_value(read_value_from_command::<f64>(initialize, start));
                 l.set_size_request(200, 12);
                 l.connect_change_value(
                     move |_, _, new_value| { 
-                        execute_shell_command( format!("{} {}", update.clone(), new_value as i32));
+                        // the new value is accessible as an environment variable
+                        std::env::set_var("DAMA_VAL", new_value.floor().to_string() );
+                        execute_shell_command( update.clone() );
                         Inhibit(false)
                     });
                 self.add(&l);

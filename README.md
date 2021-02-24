@@ -47,11 +47,13 @@ make install
 
 ## writing your own menu entries
 
-menu entries are read from a file called `dama.json`.
-The program will look for it in `$XDG_CONFIG_HOME` 
-if the variable is set, or in `$HOME/.config` if it is not.
+menu entries are read from json files listed in a file called `config`.
+The program will look for it in `$XDG_CONFIG_HOME/dama/` 
+if the variable is set, or in `$HOME/.config/dama` if it is not.
 
-if that file doesn't exist, dama will try to read from `$HOME/.dama.json`.
+if that file doesn't exist, dama will try to read from `$HOME/.dama/config`.
+
+each line of your `config` should be the full path to a json file describing a menu entry.
 
 Available entries are of types:
 
@@ -85,12 +87,13 @@ Available entries are of types:
            "xbacklight -get",
            // the command to run in order to get the initial value.
            // this will be clamped between maximum and minimum values.
-           "xbacklight -set"] 
+           "xbacklight -set $DAMA_VAL"] 
            // the command to be executed when the slider is moved.
-           // the current value of the slider is added to the end                               
-           // of this string, rounded to an integer.
+           // the current value of the slider is available through                              
+           // the environment variable $DAMA_VAL, rounded to an integer.
 }                             
 ```
+A toplevel `Notebook` is implicitly added as a container for your entries.
 
 all commands are executed with `sh -c`.
 
