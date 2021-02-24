@@ -11,7 +11,7 @@
             [{"Label": "A <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"}]
       ]},
       {"Box" : ["", "Horizontal", [{"Label": "A slider to control backlight!"},
-                                 {"Scale": [0.0, 100.0,"xbacklight -get", "xbacklight -set"]}]
+                                 {"Scale": [0.0, 100.0,"xbacklight -get", "xbacklight -set $DAMA_VAL"]}]
       ]}
     ]
   ]
