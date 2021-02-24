@@ -87,10 +87,10 @@ Available entries are of types:
            "xbacklight -get",
            // the command to run in order to get the initial value.
            // this will be clamped between maximum and minimum values.
-           "xbacklight -set"] 
+           "xbacklight -set $DAMA_VAL"] 
            // the command to be executed when the slider is moved.
-           // the current value of the slider is added to the end                               
-           // of this string, rounded to an integer.
+           // the current value of the slider is available through                              
+           // the environment variable $DAMA_VAL, rounded to an integer.
 }                             
 ```
 A toplevel `Notebook` is implicitly added as a container for your entries.
