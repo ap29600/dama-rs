@@ -64,7 +64,7 @@ fn main() -> std::io::Result<()> {
             _   => match serde_json::from_str::<SerializableWidget>(&*sub_widget_file) {
                 Ok(sub_widget) => sub_widget,
                 // if that fails, display an error
-                _ => helper::generate_fallback_layout(format!("error parsing: {}", source))}})
+                _ => helper::generate_fallback_layout(format!("error parsing: {}", sub_widget_file))}})
         .collect::<Vec<_>>();
     
 
