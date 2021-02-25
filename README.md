@@ -1,5 +1,5 @@
 # Dama
-![](assets/icon.png)
+![](assets/icon2.png)
 
 ## Disclaimer
 
