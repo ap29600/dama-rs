@@ -1,7 +1,9 @@
-use gtk::prelude::*;
-use super::helper::*;
-use super::structs::*;
+use duplicate::duplicate;
 
+use crate::structs::SerializableWidget;
+use crate::helper::*;
+
+use gtk::{prelude::*, Orientation};
 pub trait AddFromSerializable {
     fn add_from(&self, obj: SerializableWidget );
 }
@@ -20,28 +22,11 @@ impl ContainerMaybeWithLabel for gtk::Notebook {
     }
 }
 
-impl ContainerMaybeWithLabel for gtk::ApplicationWindow {
+#[duplicate (SimpleContainer; [gtk::ApplicationWindow]; [gtk::Box])]
+impl ContainerMaybeWithLabel for SimpleContainer {
     // otherwise, ignore the label
     fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, _label: Option<&str>) {
         self.add(element);
-    }
-}
-
-impl ContainerMaybeWithLabel for gtk::Box {
-    // same here
-    fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, _label: Option<&str>) {
-        self.add(element);
-    }
-}
-
-// this seems redundant, maybe we could have serde derive the 
-// (de)serialization directly for `gtk::Orientation`
-impl Into<gtk::Orientation> for Orientation {
-    fn into(self) -> gtk::Orientation {
-        match self {
-            Orientation::Vertical => gtk::Orientation::Vertical,
-            Orientation::Horizontal => gtk::Orientation::Horizontal,
-        }
     }
 }
 
@@ -50,12 +35,29 @@ impl<T> AddFromSerializable for T
     fn add_from(&self, obj: SerializableWidget) {
         match obj {
             SerializableWidget::Box(name, orientation, elements) => {
-                let b = gtk::Box::new(orientation.into(), match orientation {
-                    Orientation::Horizontal => 20,
-                    Orientation::Vertical   => 0 });
+                let b = gtk::Box::new(orientation, match orientation {
+                    Orientation::Horizontal => 30,
+                    _ => 0
+                });
                 b.set_border_width(10);
+                // this is checked here because elements gets moved later
+                let first_is_label = match elements.iter().next() {
+                        Some(SerializableWidget::Label(_)) => true,
+                        _ => false };
                 for element in elements {
                     b.add_from(element);
+                }
+                if orientation == gtk::Orientation::Horizontal && first_is_label {
+                    // a leading label will fill all the left side, 
+                    // pushing buttons to the right
+                    b.get_children().iter().next()
+                        .map(|w| b.set_child_packing(
+                                w,
+                                true,   // expand
+                                true,  // fill
+                                12,     // padding
+                                gtk::PackType::Start)
+                            );
                 }
                 self.add_maybe_with_label(&b, Some(&*name));
             }
@@ -71,16 +73,25 @@ impl<T> AddFromSerializable for T
                 b.connect_clicked( move |_| execute_shell_command (command.clone()) );
                 self.add(&b);
             }
+            SerializableWidget::Image(path) => {
+                let l = gtk::Image::from_file(path);
+                l.set_margin_top(10);
+                l.set_margin_bottom(10);
+                l.set_margin_start(10);
+                l.set_margin_end(10);
+                self.add(&l);
+            }
             SerializableWidget::Label(label) => {
                 let l = gtk::Label::new(None);
                 l.set_markup(&*label);
                 l.set_line_wrap(true);
+                l.set_xalign(0.0);
                 self.add(&l);
             }
             SerializableWidget::Scale(start, end, initialize, update) => {
                 let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 5.);
                 l.set_value(read_value_from_command::<f64>(initialize, start));
-                l.set_size_request(200, 12);
+                l.set_size_request(250, 12);
                 l.connect_change_value(
                     move |_, _, new_value| { 
                         // the new value is accessible as an environment variable

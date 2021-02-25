@@ -1,16 +1,23 @@
-use serde_derive::{Serialize, Deserialize};
+use serde_derive::Deserialize;
+use gtk::Orientation;
 
-#[derive(Serialize, Deserialize, Copy, Clone)]
-pub enum Orientation {
+#[derive(Deserialize, Copy, Clone, Eq, PartialEq)]
+#[serde (remote = "Orientation")]
+pub enum OrientationSerial {
     Vertical,
     Horizontal,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub enum SerializableWidget {
-    Notebook(Vec<SerializableWidget>),
-    Box(String, Orientation, Vec<SerializableWidget>),
-    Label(String),
+    Notebook(Vec<SerializableWidget>), // children
+    Box(String,  // title, only used if parent is a Notebook
+        // trick to derive Deserialize on gtk::Orientation
+        #[serde (with = "OrientationSerial")] 
+        Orientation,
+        Vec<SerializableWidget>), // children
+    Label(String), // text
+    Image(String), // path
     Button(String, String), // label, command
     Scale(f64, f64, String, String), // min, max, initialize, update
 }

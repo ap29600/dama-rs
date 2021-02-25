@@ -25,12 +25,12 @@ here's a screenshot with the `adapta` gtk theme
 - [X] interact with provided scripts
   - [x] execute commands (e.g. change brightness with a slider)
   - [X] get values back from commands (e.g. set the correct value for the brightness slider at startup)
-- [ ] add support for image widgets
+- [x] add support for image widgets
+  - [ ] dynamically resize the image
 - [ ] add support for checkbox widgets
 - [ ] style the layout in a sensible way
   - [x] allow setting names for tabs
   - [ ] move the tab list to the side
-  - [x] make sliders fill all horizontal available space
 
 
 ## Dependencies
@@ -73,7 +73,11 @@ Available entries are of types:
       ]
 ]},
 
-{"Label": ["some text"]},
+{"Label": "some text"},
+
+{"Image": "/absolute/path/to/image"} 
+            // the image will not be resized, you will have to resize 
+            // the source file for the time being
 
 {"Button": ["the button's label", 
             "notify-send \"click!\""]
@@ -96,4 +100,7 @@ Available entries are of types:
 A toplevel `Notebook` is implicitly added as a container for your entries.
 
 all commands are executed with `sh -c`.
+
+In a horizontal `Box`, if the first element is a `Label`, it will expand to push
+the remaining elements to the right of the window. This should result in a tidier layout.
 
