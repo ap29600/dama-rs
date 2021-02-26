@@ -27,7 +27,7 @@ here's a screenshot with the `adapta` gtk theme
   - [X] get values back from commands (e.g. set the correct value for the brightness slider at startup)
 - [x] add support for image widgets
   - [ ] dynamically resize the image
-- [ ] add support for checkbox widgets
+- [x] add support for checkbox widgets
 - [ ] style the layout in a sensible way
   - [x] allow setting names for tabs
   - [ ] move the tab list to the side
@@ -82,6 +82,12 @@ Available entries are of types:
 {"Button": ["the button's label", 
             "notify-send \"click!\""]
             // the command to be executed on click 
+}, 
+
+{"Checkbox": ["echo true",
+			// command providing initial state
+            "notify-send $DAMA_VAL"]
+            // the command to be executed on toggle
 }, 
 
 {"Scale": [0.0,   
