@@ -84,7 +84,8 @@ Available entries are of types:
             // the command to be executed on click 
 }, 
 
-{"Checkbox": ["echo true",
+{"Checkbox": ["the label",
+			"echo true",
 			// command providing initial state
             "notify-send $DAMA_VAL"]
             // the command to be executed on toggle

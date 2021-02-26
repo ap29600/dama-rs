@@ -73,8 +73,8 @@ impl<T> AddFromSerializable for T
                 b.connect_clicked( move |_| execute_shell_command (command.clone()) );
                 self.add(&b);
             }
-            SerializableWidget::Checkbox(initialize, update) => {
-                let c = gtk::CheckButton::new();
+            SerializableWidget::Checkbox(label, initialize, update) => {
+                let c = gtk::CheckButton::with_label(&*label);
                 c.set_active(read_value_from_command::<bool>(initialize, false));
                 c.connect_toggled(move |checkbox| {
                         std::env::set_var("DAMA_VAL", checkbox.get_active().to_string());
