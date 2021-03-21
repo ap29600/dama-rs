@@ -26,6 +26,8 @@ changes might still be made to layout styling / anything that doesn't involve us
 - [X] interact with provided scripts
   - [x] execute commands (e.g. change brightness with a slider)
   - [X] get values back from commands (e.g. set the correct value for the brightness slider at startup)
+  - [X] run `Scale` commands asynchronously to avoid blocking the main thread 
+    (thread sync method kindly suggested by Alice Ryhl)
 - [x] add support for image widgets
   - [ ] dynamically resize the image
 - [x] add support for checkbox widgets
