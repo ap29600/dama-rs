@@ -30,7 +30,7 @@ pub fn read_value_from_command <T> (command: String, default: T) -> T
 
 pub fn execute_shell_command(command: String) {
     match std::process::Command::new("sh").arg("-c")
-        .arg(command.clone()).spawn() {
+        .arg(command.clone()).output() {
             Ok(_) => (),
             Err(e) => eprint!("{}", e)
         }
