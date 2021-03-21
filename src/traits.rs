@@ -1,6 +1,6 @@
 use duplicate::duplicate;
 
-use crate::structs::SerializableWidget;
+use crate::structs::{ SerializableWidget , Watch };
 use crate::helper::*;
 
 use gtk::{prelude::*, Orientation};
@@ -29,6 +29,7 @@ impl ContainerMaybeWithLabel for SimpleContainer {
         self.add(element);
     }
 }
+
 
 impl<T> AddFromSerializable for T 
     where T: ContainerExt, T:ContainerMaybeWithLabel {
@@ -97,34 +98,21 @@ impl<T> AddFromSerializable for T
                 l.set_xalign(0.0);
                 self.add(&l);
             }
-            SerializableWidget::Scale(start, end, initialize, update) => {
+            SerializableWidget::Scale(start, end, initial_command, update_command) => {
                 let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 5.);
-                l.set_value(read_value_from_command::<f64>(initialize, start));
+                let initial_value = read_value_from_command::<f64>(initial_command, start);
                 l.set_size_request(250, 12);
-
-                let (tx, rx) = std::sync::mpsc::channel::<f64>(); 
-
-                std::thread::spawn( move || { 
-                    loop { 
-                        if let Some(v) = rx.try_iter().last() {
-                            // busy cycle that discards intermediate values
-                            std::env::set_var("DAMA_VAL", v.floor().to_string() );
-                            execute_shell_command(update.clone());
-                       } else {
-                            // awaiting a new value
-                            if let Some(v) = rx.recv().ok() {
-                                std::env::set_var("DAMA_VAL", v.floor().to_string() );
-                                execute_shell_command(update.clone());
-                            }
-                       }
-                    } 
-                });
+                l.set_value(initial_value);
+                
+                let tx = Watch::new(initial_value); 
+                let mut rx = tx.clone();
+                std::thread::spawn( move || { loop { 
+                    std::env::set_var("DAMA_VAL", rx.wait().floor().to_string());
+                    execute_shell_command(update_command.clone()); 
+                }});
                 l.connect_change_value(
                     move |_, _, new_value| { 
-                        match tx.send(new_value) {
-                            Ok(_) => (),
-                            Err(e) => println!("{:?}",e)
-                        }
+                        tx.clone().set_value(new_value);
                         Inhibit(false)
                     });
                 self.add(&l);
