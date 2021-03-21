@@ -6,6 +6,8 @@
 This program aims to be a hackable, easy to use menu that can be paired to 
 lightweight window managers in order to change settings on the fly.
 
+**This is a learning experience for me, most of what i'm doing is probably not a best practice.**
+
 ## Looks
 
 here's a screenshot with the `adapta` gtk theme
@@ -13,6 +15,10 @@ here's a screenshot with the `adapta` gtk theme
 ![](assets/screenshot.png)
 
 ## feature roadmap
+
+**version 1.0 has been reached, possibly breaking changes will not occur on the main branch**
+
+changes might still be made to layout styling / anything that doesn't involve user configuration files
 
 - [x] correctly render hardcoded components
 - [x] parse components from a `json` file at startup
