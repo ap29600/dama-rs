@@ -1,4 +1,4 @@
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Deserialize;
 use gtk::Orientation;
 use std::sync::{Arc, Condvar, Mutex};
 
