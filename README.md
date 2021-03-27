@@ -62,9 +62,9 @@ Available entries are of types:
 
 ```yaml
 Notebook :
-	-  	# child 1
-	-  	# child 2
-	   	# etc ... 
+	-       # child 1
+	-       # child 2
+	        # etc ... 
 
 Box : 
 	- "name"
@@ -72,8 +72,8 @@ Box :
 	  # is a direct child of a notebook.
 	  # Otherwise, it is ignored and can be left empty.
 	- "Vertical" # or  "Horizontal"
-	- 	-  	# child 1
-		-  	# child 2
+	-       -       # child 1
+		-       # child 2
 	   		# etc ... 
 
 Label : "some text"
@@ -83,7 +83,7 @@ Image : "/absolute/path/to/image"
             # the source file for the time being
 
 Button": 
-	- the button's label"
+    - the button's label"
     - "notify-send \"click!\""
         # the command to be executed on click 
 
