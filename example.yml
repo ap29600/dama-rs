@@ -1,0 +1,26 @@
+Box : 
+    - "Brightness and notifications"
+    - "Vertical"
+    -   - Box : 
+            - ""
+            - "Horizontal"
+            -   - Label : "Some buttons to launch the missiles"
+                - Button :
+                    - "hello" 
+                    - "notify-send hello"
+                - Button : 
+                    - "world"
+                    - "notify-send world"
+        - Box :  # this is here to keep the label padded consistently with other objects
+            - ""
+            - "Horizontal"
+            -   - Label : "A <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"
+        - Box : 
+            - ""
+            - "Horizontal"
+            -   - Label: "A slider to control backlight!"
+                - Scale: 
+                    - 0.0
+                    - 100.0
+                    - "xbacklight -get"
+                    - "xbacklight -set $DAMA_VAL"

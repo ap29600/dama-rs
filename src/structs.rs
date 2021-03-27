@@ -1,4 +1,4 @@
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 use gtk::Orientation;
 use std::sync::{Arc, Condvar, Mutex};
 
@@ -6,7 +6,7 @@ use std::sync::{Arc, Condvar, Mutex};
 #[serde (remote = "Orientation")]
 pub enum OrientationSerial {
     Vertical,
-    Horizontal,
+    Horizontal
 }
 
 #[derive(Deserialize, Clone)]

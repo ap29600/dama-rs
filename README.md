@@ -50,62 +50,64 @@ make install
 
 ## writing your own menu entries
 
-menu entries are read from json files listed in a file called `config`.
+menu entries are read from yaml files listed in a file called `config`.
 The program will look for it in `$XDG_CONFIG_HOME/dama/` 
 if the variable is set, or in `$HOME/.config/dama` if it is not.
 
 if that file doesn't exist, dama will try to read from `$HOME/.dama/config`.
 
-each line of your `config` should be the full path to a json file describing a menu entry.
+each line of your `config` should be the full path to a yaml file describing a menu entry.
 
 Available entries are of types:
 
-```
-{"Notebook" : [
-      // list of children
-]},
+```yaml
+Notebook :
+	-  	# child 1
+	-  	# child 2
+	   	# etc ... 
 
-{"Box": [ "name", 
-	  // this is used to set the tab's name if the box 
-	  // is a direct child of a notebook.
-	  // Otherwise, it is ignored and can be left empty.
-	  "Vertical", 
-          // or  Horizontal
-      [
-	  // list of children
-      ]
-]},
+Box : 
+	- "name"
+	  # this is used to set the tab's name if the box 
+	  # is a direct child of a notebook.
+	  # Otherwise, it is ignored and can be left empty.
+	- "Vertical" # or  "Horizontal"
+	- 	-  	# child 1
+		-  	# child 2
+	   		# etc ... 
 
-{"Label": "some text"},
+Label : "some text"
 
-{"Image": "/absolute/path/to/image"} 
-            // the image will not be resized, you will have to resize 
-            // the source file for the time being
+Image : "/absolute/path/to/image"
+            # the image will not be resized, you will have to resize 
+            # the source file for the time being
 
-{"Button": ["the button's label", 
-            "notify-send \"click!\""]
-            // the command to be executed on click 
-}, 
+Button": 
+	- the button's label"
+    - "notify-send \"click!\""
+        # the command to be executed on click 
 
-{"Checkbox": ["the label",
-			"echo true",
-			// command providing initial state
-            "notify-send $DAMA_VAL"]
-            // the command to be executed on toggle
-}, 
+Checkbox": 
+	- "the label"
+	- "echo true"
+		# command providing initial state
+    - "notify-send $DAMA_VAL"]
+        # the command to be executed on toggle
+		# the value $DAMA_VAL is available and
+		# contains the target state fo the checkbox.
 
-{"Scale": [0.0,   
-           // the minimum value
-           100.0,  
-           // the maximum value
-           "xbacklight -get",
-           // the command to run in order to get the initial value.
-           // this will be clamped between maximum and minimum values.
-           "xbacklight -set $DAMA_VAL"] 
-           // the command to be executed when the slider is moved.
-           // the current value of the slider is available through                              
-           // the environment variable $DAMA_VAL, rounded to an integer.
-}                             
+Scale": 
+	- 0.0  
+		# the minimum value
+    - 100.0
+    	# the maximum value
+    - "xbacklight -get"
+        # the command to run in order to get the initial value.
+        # this will be clamped between maximum and minimum values.
+    - "xbacklight -set $DAMA_VAL"
+        # the command to be executed when the slider is moved.
+        # the target value of the slider is available through                              
+        # the environment variable $DAMA_VAL, rounded to an integer.
 ```
 A toplevel `Notebook` is implicitly added as a container for your entries.
 

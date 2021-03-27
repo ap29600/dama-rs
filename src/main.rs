@@ -61,7 +61,7 @@ fn main() -> std::io::Result<()> {
             ""  => helper::generate_fallback_layout(
                 "it seems no config file was found for this page (T_T)".to_string()),
             // otherwise, try to build a widget struct
-            _   => match serde_json::from_str::<SerializableWidget>(&*sub_widget_file) {
+            _   => match serde_yaml::from_str::<SerializableWidget>(&*sub_widget_file) {
                 Ok(sub_widget) => sub_widget,
                 // if that fails, display an error
                 _ => helper::generate_fallback_layout(format!("error parsing: {}", sub_widget_file))}})
