@@ -62,25 +62,25 @@ Available entries are of types:
 
 ```yaml
 Notebook :
-    -       # child 1
-    -       # child 2
-            # etc ... 
+    -    # child 1
+    -    # child 2
+         # etc ... 
 
 Box : 
     - "name"
-      # this is used to set the tab's name if the box 
-      # is a direct child of a notebook.
-      # Otherwise, it is ignored and can be left empty.
+         # this is used to set the tab's name if the box 
+         # is a direct child of a notebook.
+         # Otherwise, it is ignored and can be left empty.
     - "Vertical" # or  "Horizontal"
-    -       -       # child 1
-        -       # child 2
-               # etc ... 
+    -    -    # child 1
+         -    # child 2
+              # etc ... 
 
 Label : "some text"
 
 Image : "/absolute/path/to/image"
-            # the image will not be resized, you will have to resize 
-            # the source file for the time being
+        # the image will not be resized, you will have to resize 
+        # the source file for the time being
 
 Button": 
     - the button's label"
