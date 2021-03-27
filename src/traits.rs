@@ -64,6 +64,7 @@ impl<T> AddFromSerializable for T
             }
             SerializableWidget::Notebook(v) => {
                 let nb = gtk::Notebook::new();
+                nb.set_tab_pos(gtk::PositionType::Left);
                 for elem in v {
                     nb.add_from(elem);
                 }

@@ -31,9 +31,9 @@ changes might still be made to layout styling / anything that doesn't involve us
 - [x] add support for image widgets
   - [ ] dynamically resize the image
 - [x] add support for checkbox widgets
-- [ ] style the layout in a sensible way
+- [x] style the layout in a sensible way
   - [x] allow setting names for tabs
-  - [ ] move the tab list to the side
+  - [x] move the tab list to the side
 
 
 ## Dependencies
