@@ -21,7 +21,7 @@ here's a screenshot with the `adapta` gtk theme
 changes might still be made to layout styling / anything that doesn't involve user configuration files
 
 - [x] correctly render hardcoded components
-- [x] parse components from a `json` file at startup
+- [x] parse components from a file at startup
   - [x] look in multiple locations before giving up
 - [X] interact with provided scripts
   - [x] execute commands (e.g. change brightness with a slider)
@@ -82,12 +82,12 @@ Image : "/absolute/path/to/image"
         # the image will not be resized, you will have to resize 
         # the source file for the time being
 
-Button": 
+Button : 
     - the button's label"
     - "notify-send \"click!\""
         # the command to be executed on click 
 
-Checkbox": 
+Checkbox : 
     - "the label"
     - "echo true"
         # command providing initial state
@@ -96,7 +96,7 @@ Checkbox":
         # the value $DAMA_VAL is available and
         # contains the target state fo the checkbox.
 
-Scale": 
+Scale : 
     - 0.0  
         # the minimum value
     - 100.0
