@@ -62,19 +62,19 @@ Available entries are of types:
 
 ```yaml
 Notebook :
-	-       # child 1
-	-       # child 2
-	        # etc ... 
+    -       # child 1
+    -       # child 2
+            # etc ... 
 
 Box : 
-	- "name"
-	  # this is used to set the tab's name if the box 
-	  # is a direct child of a notebook.
-	  # Otherwise, it is ignored and can be left empty.
-	- "Vertical" # or  "Horizontal"
-	-       -       # child 1
-		-       # child 2
-	   		# etc ... 
+    - "name"
+      # this is used to set the tab's name if the box 
+      # is a direct child of a notebook.
+      # Otherwise, it is ignored and can be left empty.
+    - "Vertical" # or  "Horizontal"
+    -       -       # child 1
+        -       # child 2
+               # etc ... 
 
 Label : "some text"
 
@@ -88,19 +88,19 @@ Button":
         # the command to be executed on click 
 
 Checkbox": 
-	- "the label"
-	- "echo true"
-		# command providing initial state
+    - "the label"
+    - "echo true"
+        # command providing initial state
     - "notify-send $DAMA_VAL"]
         # the command to be executed on toggle
-		# the value $DAMA_VAL is available and
-		# contains the target state fo the checkbox.
+        # the value $DAMA_VAL is available and
+        # contains the target state fo the checkbox.
 
 Scale": 
-	- 0.0  
-		# the minimum value
+    - 0.0  
+        # the minimum value
     - 100.0
-    	# the maximum value
+        # the maximum value
     - "xbacklight -get"
         # the command to run in order to get the initial value.
         # this will be clamped between maximum and minimum values.
