@@ -145,7 +145,7 @@ by reading the label of a top-level box, and user-defined Notebooks also behave 
 
 all commands are executed with `sh -c`.
 
-In a horizontal `Box`, if the first element is a `Label`, it will expand to push
+In a horizontal `Box`, if the first element is a `Label` it will expand to push
 the remaining elements to the right of the window. This should result in a tidier layout:
 
 ```
