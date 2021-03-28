@@ -1,5 +1,6 @@
 use std::{fmt::Debug, str::FromStr};
 use std::process::{Command, Output};
+use std::io::Read;
 
 use crate::structs::SerializableWidget;
 
@@ -37,9 +38,37 @@ pub fn execute_shell_command(command: String) {
 }
 
 pub fn generate_fallback_layout(text: String) -> SerializableWidget {
-    SerializableWidget::Notebook(vec![ 
-         SerializableWidget::Box("default message".to_string(), gtk::Orientation::Horizontal, vec![
-            SerializableWidget::Label(text)
-         ])
-    ])
+    SerializableWidget::Box(
+        "Error".to_string(), 
+        gtk::Orientation::Horizontal, 
+        vec![ SerializableWidget::Label(text) ])
+}
+
+
+pub fn deserialize_from_file (s : &str ) -> SerializableWidget {
+    let mut buf = String::new();
+    let inner_buf = std::fs::File::open(s.clone())
+        .ok().map( |mut f| {
+            f.read_to_string(&mut buf).unwrap();
+            &*buf
+        });
+
+    match inner_buf  {
+        Some("") => generate_fallback_layout(
+            format!("the config file for this page was empty: {}", s)), 
+        Some(widget_string) => 
+            match { if s.ends_with(".yml") {
+                serde_yaml::from_str(widget_string).ok()
+            } else if s.ends_with(".json") {
+                serde_json::from_str(widget_string).ok()
+            } else {
+                Some(generate_fallback_layout(format!("this file does not have a supported extension: {};\nSupported file extensions are json, yml.", s)))
+            } } {
+                Some(widget) => widget,
+                None => 
+                    generate_fallback_layout(format!("there was an error parsing this file: {}", s))
+            },
+        None => generate_fallback_layout(
+            format!("it seems no config file was found for this page: {}", s))
+    }
 }

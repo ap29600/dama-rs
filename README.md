@@ -50,21 +50,22 @@ make install
 
 ## writing your own menu entries
 
-menu entries are read from yaml files listed in a file called `config`.
+menu entries are read from locations listed in a file called `config`.
 The program will look for it in `$XDG_CONFIG_HOME/dama/` 
 if the variable is set, or in `$HOME/.config/dama` if it is not.
 
 if that file doesn't exist, dama will try to read from `$HOME/.dama/config`.
 
-each line of your `config` should be the full path to a yaml file describing a menu entry.
+each line of your `config` should be the full path to a yaml or json file describing a menu page.
+This page must consist of exactly one top-level widget, which may have children.
 
-Available entries are of types:
+Available wigets are of types:
 
 ```yaml
 Notebook :
-    -    # child 1
-    -    # child 2
-         # etc ... 
+    -   # child 1
+    -   # child 2
+        # etc ... 
 
 Box : 
     - "name"
@@ -109,10 +110,59 @@ Scale :
         # the target value of the slider is available through                              
         # the environment variable $DAMA_VAL, rounded to an integer.
 ```
-A toplevel `Notebook` is implicitly added as a container for your entries.
+
+Or with the json syntax:
+
+```json
+{ "Notebook" : 
+      [ { "child 1"},  
+      {"child 2"},
+      {" ... "} ]
+},
+
+{ "Box" : 
+    [ "name",
+      "Vertical",
+      [ { "child 1"},  
+      {"child 2 ..."} ]
+},
+
+{ "Label" : "some text" },
+
+{ "Image" : "/absolute/path/to/image" },
+
+{ "Button" : ["text" , "command"] }, 
+
+{ "Checkbox" : [ "text", "initial command", "update command"] },
+
+{ "Scale" : [0.0 , 100.0,  "initial command", "update command" } 
+
+```
+
+A toplevel `Notebook` is implicitly added as a container for your pages. page names are handled
+by reading the label of a top-level box, and user-defined Notebooks also behave this way.
 
 all commands are executed with `sh -c`.
 
 In a horizontal `Box`, if the first element is a `Label`, it will expand to push
-the remaining elements to the right of the window. This should result in a tidier layout.
+the remaining elements to the right of the window. This should result in a tidier layout:
+
+```
+Without label expansion:
+ /----------------------------------------------\
+ | Regular Label  [Btn][Btn]                    | 
+ | Slightly longer Label  [Btn]                 | 
+ | Short Label  [Large Button]                  |
+ \----------------------------------------------/
+
+With label expansion:
+ /----------------------------------------------\
+ | Regular Label                    [Btn][Btn]  |
+ | Slightly longer Label                 [Btn]  | 
+ | Short Label                  [Large Button]  |
+ \----------------------------------------------/
+```
+
+
+
 

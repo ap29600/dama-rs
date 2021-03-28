@@ -1,6 +1,7 @@
 use gtk::{ApplicationWindow, Application};
 use gtk::prelude::*;
 use gio::prelude::*;
+use helper::deserialize_from_file;
 use std::io::prelude::*;
 
 use std::fs::File;
@@ -50,24 +51,9 @@ fn main() -> std::io::Result<()> {
     let widgets_list = source.split('\n').into_iter()
         .filter(|&line| {! line.starts_with("#")}) // take out the comments
         .filter(|&line| {! line.is_empty()}) // take out empty lines
-        .map( |line| match File::open(&*line) {
-            Ok(mut f) => { 
-                let mut buf = String::new();  
-                f.read_to_string(&mut buf).unwrap();
-                buf}, // return a string for each file read
-            _ => "".to_string() }) // missing files result in an empty string
-        .map( |sub_widget_file| match &*sub_widget_file {
-            // if no file was read, generate this message
-            ""  => helper::generate_fallback_layout(
-                "it seems no config file was found for this page (T_T)".to_string()),
-            // otherwise, try to build a widget struct
-            _   => match serde_yaml::from_str::<SerializableWidget>(&*sub_widget_file) {
-                Ok(sub_widget) => sub_widget,
-                // if that fails, display an error
-                _ => helper::generate_fallback_layout(format!("error parsing: {}", sub_widget_file))}})
+        .map( deserialize_from_file )
         .collect::<Vec<_>>();
     
-
     let widget = SerializableWidget::Notebook(widgets_list);
 
     
