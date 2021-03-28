@@ -125,6 +125,7 @@ Or with the json syntax:
       "Vertical",
       [ { "child 1"},  
       {"child 2 ..."} ]
+    ]
 },
 
 { "Label" : "some text" },
@@ -135,7 +136,7 @@ Or with the json syntax:
 
 { "Checkbox" : [ "text", "initial command", "update command"] },
 
-{ "Scale" : [0.0 , 100.0,  "initial command", "update command" } 
+{ "Scale" : [0.0 , 100.0,  "initial command", "update command"] } 
 
 ```
 
