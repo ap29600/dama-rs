@@ -62,11 +62,13 @@ This page must consist of exactly one top-level widget, which may have children.
 Available wigets are of types:
 
 ```yaml
+# shows one widget at a time
 Notebook :
     -   # child 1
     -   # child 2
         # etc ... 
 
+# organizes other widgets
 Box : 
     - "name"
          # this is used to set the tab's name if the box 
@@ -77,17 +79,21 @@ Box :
          -    # child 2
               # etc ... 
 
+# displays some text
 Label : "some text"
 
+# displays a picture
 Image : "/absolute/path/to/image"
         # the image will not be resized, you will have to resize 
         # the source file for the time being
 
+# performs an action, but has no state
 Button : 
     - "the button's label"
     - "notify-send \"click!\""
         # the command to be executed on click 
 
+# holds a boolean value
 Checkbox : 
     - "the label"
     - "echo true"
@@ -97,6 +103,7 @@ Checkbox :
         # the value $DAMA_VAL is available and
         # contains the target state fo the checkbox.
 
+# a linear slider
 Scale : 
     - 0.0  
         # the minimum value
@@ -109,6 +116,17 @@ Scale :
         # the command to be executed when the slider is moved.
         # the target value of the slider is available through                              
         # the environment variable $DAMA_VAL, rounded to an integer.
+
+# choose between different string values
+Combo :
+    - "echo \"option 1\noption2\noption3\""
+        # a command providing a list of options separated by newlines
+    - "echo option2"
+        # a command providing the option that should be selected 
+        # by default. If this is not a valid option in the list above, 
+        # then nothing will be selected
+    - "notify-send \"$DAMA_VAL\""
+        # the command to be executed on change
 ```
 
 Or with the json syntax:
@@ -136,7 +154,9 @@ Or with the json syntax:
 
 { "Checkbox" : [ "text", "initial command", "update command"] },
 
-{ "Scale" : [0.0 , 100.0,  "initial command", "update command"] } 
+{ "Scale" : [0.0 , 100.0,  "initial command", "update command"] },
+
+{ "Combo" : ["list command", "initial command", "update command" ]}
 
 ```
 

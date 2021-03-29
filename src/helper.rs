@@ -4,6 +4,19 @@ use std::io::Read;
 
 use crate::structs::SerializableWidget;
 
+pub fn read_stdout_from_command (command: String) -> String {
+    match Command::new("sh").arg("-c").arg(command).output() {
+        Err(e) => { println!("error while running command: {}", e); "".to_string() },
+        Ok(Output{status: _ , stdout: utf_8_vec, stderr: _}) => 
+            match String::from_utf8(utf_8_vec)
+            { 
+                Err(e) => { println!("error while making a string: {}", e); "".to_string()},
+                Ok(string) => string
+            }
+    }
+}
+
+
 pub fn read_value_from_command <T> (command: String, default: T) -> T 
     where T: std::str::FromStr, <T as FromStr>::Err: Debug {
     match Command::new("sh").arg("-c").arg(command).output() {

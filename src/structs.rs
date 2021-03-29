@@ -22,6 +22,7 @@ pub enum SerializableWidget {
     Button(String, String), // label, command
     Checkbox(String, String, String), // label, initialize, update
     Scale(f64, f64, String, String), // min, max, initialize, update
+    Combo(String, String, String),  // get list, get active, update
 }
 
 

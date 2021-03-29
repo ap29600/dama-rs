@@ -118,6 +118,29 @@ impl<T> AddFromSerializable for T
                     });
                 self.add(&l);
             }
+            SerializableWidget::Combo(list, init, update) => {
+                let combo = gtk::ComboBoxText::new();
+                let rawoptions = read_stdout_from_command(list);
+                let options = rawoptions
+                    .split("\n")
+                    .filter(|line| !line.is_empty())
+                    .collect::<Vec<_>>();
+
+                let active = options.iter()
+                    .position( move |entry| {
+                        entry.to_string() == 
+                            read_value_from_command(init.clone(), "".to_string()).to_string() })
+                    .map(|i| i as u32); 
+                println!("{:?}",options);
+                for entry in options {
+                    combo.append(None, entry);
+                }
+                combo.set_active(active);
+                combo.connect_changed( move |combo| {
+                    std::env::set_var("DAMA_VAL", combo.get_active_text().unwrap());
+                    execute_shell_command(update.clone())} );
+                self.add(&combo);
+            }
         }
     }
 }
