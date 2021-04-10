@@ -186,7 +186,7 @@ With label expansion:
  └──────────────────────────────────────────────┘
 ```
 
-# Lazy loading
+## Lazy loading
 
 as of version 1.2.1 on the experimental branch, the contents of a Box will only be loaded on the first
 draw call to that box. This is because the loading scripts are run sequentially, so having many pages
