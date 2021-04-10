@@ -168,6 +168,8 @@ all commands are executed with `sh -c`.
 In a horizontal `Box`, if the first element is a `Label` it will expand to push
 the remaining elements to the right of the window. This should result in a tidier layout:
 
+
+
 ```
 Without label expansion:
  ┌──────────────────────────────────────────────┐
@@ -184,6 +186,12 @@ With label expansion:
  └──────────────────────────────────────────────┘
 ```
 
+# Lazy loading
+
+as of version 1.2.1 on the experimental branch, the contents of a Box will only be loaded on the first
+draw call to that box. This is because the loading scripts are run sequentially, so having many pages
+executing potentially long processes will slow down the startup; running the scripts on the first draw 
+means that only pages you are looking at will be loaded.
 
 
 

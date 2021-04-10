@@ -115,25 +115,37 @@ impl<T> AddFromSerializable for T
                     _ => 0
                 });
                 b.set_border_width(10);
-                // this is checked here because elements gets moved later
-                let first_is_label = match elements.iter().next() {
-                        Some(SerializableWidget::Label(_)) => true,
-                        _ => false };
-                for element in elements {
-                    b.add_from(element);
-                }
-                if orientation == gtk::Orientation::Horizontal && first_is_label {
-                    // a leading label will fill all the left side, 
-                    // pushing buttons to the right
-                    b.get_children().iter().next()
-                        .map(|w| b.set_child_packing(
-                                w,
-                                true,   // expand
-                                true,  // fill
-                                12,     // padding
-                                gtk::PackType::Start)
-                            );
-                }
+                // would be nice to just stop listening to draw signals after the first one
+                // but gtk does not expose a connect_first_draw() function or similar;
+                // there is probably a better way to do this.
+                b.connect_draw(
+                    move |b, _|
+                    {
+                        // only populate the box when drawing, if empty.
+                        // this way if you have many pages running
+                        // intensive scripts only the ones you actually use
+                        // will be loaded.
+                        if b.get_children().len() == 0 {
+                            for element in elements.clone() {
+                                b.add_from(element);
+                            }
+                            // if the first element is a label make
+                            // it expand to push other stuff aside
+                            b.get_children().iter().next() .map( 
+                                |w| { 
+                                    if w.is::<gtk::Label>() {
+                                        b.set_child_packing(
+                                            w,
+                                            true,   // expand
+                                            true,  // fill
+                                            12,     // padding
+                                            gtk::PackType::Start);
+                                    }
+                                });
+                        }
+                        b.show_all();
+                        Inhibit(false)
+                    });
                 self.add_maybe_with_label(&b, Some(&*name));
             }
             SerializableWidget::Notebook(v) => {
