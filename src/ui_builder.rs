@@ -1,38 +1,112 @@
-use duplicate::duplicate;
+use crate::structs::SerializableWidget;
+use gtk::{Application, ApplicationWindow, prelude::*};
 
-use crate::structs::{ SerializableWidget , Watch };
-use crate::helper::*;
 
-use gtk::{prelude::*, Orientation};
-pub trait AddFromSerializable {
-    fn add_from(&self, obj: SerializableWidget );
+// accepts a widget intermediate representation and an application,
+// constructs a new window and populates it with the widgets
+pub fn build_ui(app: &Application, widget: SerializableWidget) {
+    // generic gtk boiler plate
+    let win = ApplicationWindow::new(app);
+    win.set_title("Dama - Menu");
+    win.set_border_width(10);
+    win.set_position(gtk::WindowPosition::Center);
+    
+    // construct a widget from the intermediate representation
+    win.add_from(widget);
+    
+    win.show_all();
 }
 
-// dirty workaround to avoid ahving to use specialization, which currently is unstable.
+
+// helper to make an error page out of a string
+fn generate_fallback_layout(text: String) -> SerializableWidget {
+    SerializableWidget::Box(
+        String::from("Error"),
+        gtk::Orientation::Horizontal, 
+        vec![ SerializableWidget::Label(text) ])
+}
+
+
+// reads a widget description from file and generates 
+// an intermediate representation with serde
+use std::io::Read;
+pub fn deserialize_from_file (file_name : &str ) -> SerializableWidget {
+    // this is declared here to be dropped after the closure it is passed to
+    let mut file_contents = String::new();
+   
+    // here we determine the deserializer we need to use
+    let deserializer: Box<dyn Fn (_) -> Option<SerializableWidget>>;
+    if file_name.ends_with(".yml") {
+        deserializer = Box::new(|file| serde_yaml::from_str(file).ok());
+    } else if file_name.ends_with("json") {
+        deserializer = Box::new(|file| serde_json::from_str(file).ok());
+    } else {
+        return generate_fallback_layout( 
+            format!( "this file does not have a supported extension: {};\n\
+                     Supported file extensions are .json and .yml", file_name));
+    }
+    
+    // try to read from file
+    if let Some(_) = 
+        std::fs::File::open(file_name.clone()).ok()
+            .map(|mut f| {f.read_to_string(&mut file_contents).ok()}).flatten() 
+    // the flatten makes sure we catch errors both  opening and reading the file
+    { match &*file_contents 
+        { // if the file is empty, just generate an error page
+            "" => generate_fallback_layout(
+                format!("the config file for this page was empty: {}", file_name)), 
+            //  otherwise, try to deserialize
+            widget_string => deserializer(widget_string)
+                // if that fails then make an error including the faulty file
+                .unwrap_or( generate_fallback_layout( 
+                    format!("could not deserialize: \n{}", widget_string)
+                    )) }
+    } else { // if we encountered an error reading from file, generate an error page
+        generate_fallback_layout(
+            format!("it seems no config file was found for this page: {}", file_name))
+    }
+}
+
+
+// dirty workaround to avoid having to use specialization, which currently is unstable.
 // it would be ideal for `add_maybe_with_label()` to be a method of AddFromSerializable,
 // implemented differently for Notebook.
-pub trait ContainerMaybeWithLabel {
+trait ContainerMaybeWithLabel {
     fn add_maybe_with_label<W: IsA<gtk::Widget>> (&self, element: &W, label: Option<&str>);
 }
 
+
+// setting a separate implementation for boxes and the main window as opposed to notebooks:
+// Notebooks will use the child's label if it has one.
 impl ContainerMaybeWithLabel for gtk::Notebook {
-    // if the parent is a notebook, we use the label as a name for the tab
     fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, label: Option<&str>) {
         self.append_page(element, Some(& gtk::Label::new(label)));
     }
 }
 
+
+// anything else will ignore the label.
 #[duplicate (SimpleContainer; [gtk::ApplicationWindow]; [gtk::Box])]
 impl ContainerMaybeWithLabel for SimpleContainer {
-    // otherwise, ignore the label
     fn add_maybe_with_label<W: IsA<gtk::Widget>>(&self, element: &W, _label: Option<&str>) {
         self.add(element);
     }
 }
 
 
+use gtk::Orientation;
+use duplicate::duplicate;
+use crate::helper::*;
+use crate::watch::Watch;
+
+trait AddFromSerializable {
+    fn add_from(&self, obj: SerializableWidget );
+}
+
+// TODO: split this into smaller chunks for maintainability
 impl<T> AddFromSerializable for T 
     where T: ContainerExt, T:ContainerMaybeWithLabel {
+    // accepts an intermediate representation, produces a widget and attaches it to self
     fn add_from(&self, obj: SerializableWidget) {
         match obj {
             SerializableWidget::Box(name, orientation, elements) => {
@@ -131,7 +205,6 @@ impl<T> AddFromSerializable for T
                         entry.to_string() == 
                             read_value_from_command(init.clone(), "".to_string()).to_string() })
                     .map(|i| i as u32); 
-                println!("{:?}",options);
                 for entry in options {
                     combo.append(None, entry);
                 }
