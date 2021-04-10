@@ -150,18 +150,18 @@ the remaining elements to the right of the window. This should result in a tidie
 
 ```
 Without label expansion:
- /----------------------------------------------\
- | Regular Label  [Btn][Btn]                    | 
- | Slightly longer Label  [Btn]                 | 
- | Short Label  [Large Button]                  |
- \----------------------------------------------/
+ ┌──────────────────────────────────────────────┐
+ │ Regular Label  [Btn][Btn]                    │ 
+ │ Slightly longer Label  [Btn]                 │ 
+ │ Short Label  [Large Button]                  │
+ └──────────────────────────────────────────────┘
 
 With label expansion:
- /----------------------------------------------\
- | Regular Label                    [Btn][Btn]  |
- | Slightly longer Label                 [Btn]  | 
- | Short Label                  [Large Button]  |
- \----------------------------------------------/
+ ┌──────────────────────────────────────────────┐
+ │ Regular Label                    [Btn][Btn]  │
+ │ Slightly longer Label                 [Btn]  │ 
+ │ Short Label                  [Large Button]  │
+ └──────────────────────────────────────────────┘
 ```
 
 
