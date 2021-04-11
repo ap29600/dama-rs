@@ -142,8 +142,8 @@ impl<T> AddFromSerializable for T
                                             gtk::PackType::Start);
                                     }
                                 });
+                            b.show_all();
                         }
-                        b.show_all();
                         Inhibit(false)
                     });
                 self.add_maybe_with_label(&b, Some(&*name));
