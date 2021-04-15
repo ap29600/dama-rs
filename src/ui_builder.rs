@@ -19,11 +19,13 @@ pub fn build_ui(app: &Application, widget: SerializableWidget) {
 
 
 // helper to make an error page out of a string
-fn generate_fallback_layout(text: String) -> SerializableWidget {
-    SerializableWidget::Box(
-        String::from("Error"),
-        gtk::Orientation::Horizontal, 
-        vec![ SerializableWidget::Label(text) ])
+pub fn generate_fallback_layout(text: String) -> SerializableWidget {
+    SerializableWidget::Box( 
+        crate::structs::Box {
+            title: String::from("Error"),
+            orientation: crate::structs::OrientationSerial::Horizontal, 
+            children: vec![ SerializableWidget::Label(text) ]
+        })
 }
 
 
@@ -35,11 +37,11 @@ pub fn deserialize_from_file (file_name : &str ) -> SerializableWidget {
     let mut file_contents = String::new();
    
     // here we determine the deserializer we need to use
-    let deserializer: Box<dyn Fn (_) -> Option<SerializableWidget>>;
+    let deserializer: std::boxed::Box<dyn Fn (_) -> Option<SerializableWidget>>;
     if file_name.ends_with(".yml") {
-        deserializer = Box::new(|file| serde_yaml::from_str(file).ok());
+        deserializer = std::boxed::Box::new(|file| serde_yaml::from_str(file).ok());
     } else if file_name.ends_with("json") {
-        deserializer = Box::new(|file| serde_json::from_str(file).ok());
+        deserializer = std::boxed::Box::new(|file| serde_json::from_str(file).ok());
     } else {
         return generate_fallback_layout( 
             format!( "this file does not have a supported extension: {};\n\
@@ -94,7 +96,7 @@ impl ContainerMaybeWithLabel for SimpleContainer {
 }
 
 
-use gtk::Orientation;
+use crate::structs::*;
 use duplicate::duplicate;
 use crate::helper::*;
 use crate::watch::Watch;
@@ -109,9 +111,9 @@ impl<T> AddFromSerializable for T
     // accepts an intermediate representation, produces a widget and attaches it to self
     fn add_from(&self, obj: SerializableWidget) {
         match obj {
-            SerializableWidget::Box(name, orientation, elements) => {
-                let b = gtk::Box::new(orientation, match orientation {
-                    Orientation::Horizontal => 30,
+            SerializableWidget::Box( Box {title, orientation, children} ) => {
+                let b = gtk::Box::new(orientation.into(), match orientation {
+                    OrientationSerial::Horizontal => 30,
                     _ => 0
                 });
                 b.set_border_width(10);
@@ -126,8 +128,8 @@ impl<T> AddFromSerializable for T
                         // intensive scripts only the ones you actually use
                         // will be loaded.
                         if b.get_children().len() == 0 {
-                            for element in elements.clone() {
-                                b.add_from(element);
+                            for child in children.clone() {
+                                b.add_from(child);
                             }
                             // if the first element is a label make
                             // it expand to push other stuff aside
@@ -146,7 +148,7 @@ impl<T> AddFromSerializable for T
                         }
                         Inhibit(false)
                     });
-                self.add_maybe_with_label(&b, Some(&*name));
+                self.add_maybe_with_label(&b, Some(&*title));
             }
             SerializableWidget::Notebook(v) => {
                 let nb = gtk::Notebook::new();
@@ -156,21 +158,21 @@ impl<T> AddFromSerializable for T
                 }
                 self.add(&nb)
             }
-            SerializableWidget::Button(label, command) => {
-                let b = gtk::Button::with_label(&*label);
-                b.connect_clicked( move |_| execute_shell_command (command.clone()) );
+            SerializableWidget::Button(Button {text, on_click} ) => {
+                let b = gtk::Button::with_label(&*text);
+                b.connect_clicked( move |_| execute_shell_command (on_click.clone()) );
                 self.add(&b);
             }
-            SerializableWidget::Checkbox(label, initialize, update) => {
-                let c = gtk::CheckButton::with_label(&*label);
+            SerializableWidget::CheckBox(CheckBox { text, initialize, on_click} ) => {
+                let c = gtk::CheckButton::with_label(&*text);
                 c.set_active(read_value_from_command::<bool>(initialize, false));
                 c.connect_toggled(move |checkbox| {
                         std::env::set_var("DAMA_VAL", checkbox.get_active().to_string());
-                        execute_shell_command( update.clone() );
+                        execute_shell_command( on_click.clone() );
                 });
                 self.add(&c);
             }
-            SerializableWidget::Image(path) => {
+            SerializableWidget::Image(Image { path }) => {
                 let l = gtk::Image::from_file(path);
                 l.set_margin_top(10);
                 l.set_margin_bottom(10);
@@ -185,9 +187,11 @@ impl<T> AddFromSerializable for T
                 l.set_xalign(0.0);
                 self.add(&l);
             }
-            SerializableWidget::Scale(start, end, initial_command, update_command) => {
-                let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, start, end, 5.);
-                let initial_value = read_value_from_command::<f64>(initial_command, start);
+            SerializableWidget::Scale( Scale { range, initialize, on_update}) => {
+                let l = gtk::Scale::with_range( gtk::Orientation::Horizontal, 
+                                                range.low, range.high, 
+                                                5.);
+                let initial_value = read_value_from_command::<f64>(initialize, range.low);
                 l.set_size_request(250, 12);
                 l.set_value(initial_value);
                 
@@ -195,7 +199,7 @@ impl<T> AddFromSerializable for T
                 let mut rx = tx.clone();
                 std::thread::spawn( move || { loop { 
                     std::env::set_var("DAMA_VAL", rx.wait().floor().to_string());
-                    execute_shell_command(update_command.clone()); 
+                    execute_shell_command(on_update.clone()); 
                 }});
                 l.connect_change_value(
                     move |_, _, new_value| { 
@@ -204,9 +208,9 @@ impl<T> AddFromSerializable for T
                     });
                 self.add(&l);
             }
-            SerializableWidget::Combo(list, init, update) => {
+            SerializableWidget::ComboBox(ComboBox{ initialize, select, on_update}) => {
                 let combo = gtk::ComboBoxText::new();
-                let rawoptions = read_stdout_from_command(list);
+                let rawoptions = read_stdout_from_command(initialize);
                 let options = rawoptions
                     .split("\n")
                     .filter(|line| !line.is_empty())
@@ -215,7 +219,7 @@ impl<T> AddFromSerializable for T
                 let active = options.iter()
                     .position( move |entry| {
                         entry.to_string() == 
-                            read_value_from_command(init.clone(), "".to_string()).to_string() })
+                            read_value_from_command(select.clone(), "".to_string()).to_string() })
                     .map(|i| i as u32); 
                 for entry in options {
                     combo.append(None, entry);
@@ -223,7 +227,7 @@ impl<T> AddFromSerializable for T
                 combo.set_active(active);
                 combo.connect_changed( move |combo| {
                     std::env::set_var("DAMA_VAL", combo.get_active_text().unwrap());
-                    execute_shell_command(update.clone())} );
+                    execute_shell_command(on_update.clone())} );
                 self.add(&combo);
             }
         }
