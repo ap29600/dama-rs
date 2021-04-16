@@ -70,94 +70,99 @@ Notebook :
 
 # organizes other widgets
 Box : 
-    - "name"
+  title: "name"  # (Optional)
          # this is used to set the tab's name if the box 
          # is a direct child of a notebook.
          # Otherwise, it is ignored and can be left empty.
-    - "Vertical" # or  "Horizontal"
-    -    -    # child 1
-         -    # child 2
-              # etc ... 
+  orientation: "Vertical" # or  "Horizontal" (Optional)
+  children:
+    -  # child 1
+    -  # child 2
+    -  # etc ... 
 
 # displays some text
 Label : "some text"
 
 # displays a picture
-Image : "/absolute/path/to/image"
+Image : 
+  path: "/absolute/path/to/image"
         # the image will not be resized, you will have to resize 
         # the source file for the time being
 
 # performs an action, but has no state
 Button : 
-    - "the button's label"
-    - "notify-send \"click!\""
+  text: "the button's label" # (Optional)
+  on_click: "notify-send \"click!\""
         # the command to be executed on click 
 
 # holds a boolean value
-Checkbox : 
-    - "the label"
-    - "echo true"
+CheckBox : 
+  text: "the label" # (Optional)
+  initialize: "echo true"
         # command providing initial state
-    - "notify-send $DAMA_VAL"]
+  on_click: "notify-send $DAMA_VAL"]
         # the command to be executed on toggle
         # the value $DAMA_VAL is available and
         # contains the target state fo the checkbox.
 
 # a linear slider
 Scale : 
-    - 0.0  
-        # the minimum value
-    - 100.0
-        # the maximum value
-    - "xbacklight -get"
+  range: { low:  0.0, high: 100.0 } # (Optional)
+  initialize: "xbacklight -get"
         # the command to run in order to get the initial value.
         # this will be clamped between maximum and minimum values.
-    - "xbacklight -set $DAMA_VAL"
+  on_update: "xbacklight -set $DAMA_VAL"
         # the command to be executed when the slider is moved.
         # the target value of the slider is available through                              
         # the environment variable $DAMA_VAL, rounded to an integer.
 
 # choose between different string values
-Combo :
-    - "echo \"option 1\noption2\noption3\""
+ComboBox :
+  initialize: "echo \"option 1\noption2\noption3\""
         # a command providing a list of options separated by newlines
-    - "echo option2"
+  select: "echo option2"
         # a command providing the option that should be selected 
         # by default. If this is not a valid option in the list above, 
         # then nothing will be selected
-    - "notify-send \"$DAMA_VAL\""
+  on_update: "notify-send \"$DAMA_VAL\""
         # the command to be executed on change
 ```
 
 Or with the json syntax:
 
 ```json
-{ "Notebook" : 
-      [ { "child 1"},  
-      {"child 2"},
-      {" ... "} ]
-},
+{ "Notebook" : [ 
+  { "child 1"},  
+  {"child 2"},
+  {" ... "} 
+]},
 
-{ "Box" : 
-    [ "name",
-      "Vertical",
-      [ { "child 1"},  
-      {"child 2 ..."} ]
-    ]
-},
+{"Box": { 
+  "title": "Title",
+  "orientation": "Vertical",
+  "children": [{ "child 1"},  {"child 2 ..."}] 
+}},
 
-{ "Label" : "some text" },
+{"Label" : "some text" },
 
-{ "Image" : "/absolute/path/to/image" },
+{"Image" : { "path":"/absolute/path/to/image" }},
 
-{ "Button" : ["text" , "command"] }, 
+{"Button" : { "text":"text" , "on_click":"command"}}, 
 
-{ "Checkbox" : [ "text", "initial command", "update command"] },
+{"CheckBox": 
+  { "text": "text", 
+    "initialize":"initial command", 
+    "on_click": "update command" } },
 
-{ "Scale" : [0.0 , 100.0,  "initial command", "update command"] },
+{"Scale" : { 
+  "range": { "low": 0.0 , "high": 100.0 }, 
+  "initialize":"initial command", 
+  "on_update": "update command" } },
 
-{ "Combo" : ["list command", "initial command", "update command" ]}
-
+{"ComboBox": {
+  "initialize": "list command", 
+  "select": "initial command", 
+  "on_update": "update command" }}
 ```
 
 A toplevel `Notebook` is implicitly added as a container for your pages. page names are handled
