@@ -48,7 +48,7 @@ fn main() -> std::io::Result<()> {
             });
 
     // try to create a new application, if that fails then just return an error and quit 
-    let app = Application::new(Some("com.andrea.example"), Default::default())
+    let app = Application::new(Some("com.github.ap29600.Dama"), gio::ApplicationFlags::REPLACE | gio::ApplicationFlags::ALLOW_REPLACEMENT)
         .ok().ok_or( Error::new(ErrorKind::Other, "couldn't create application"))?;
     
     app.connect_activate(move |application| build_ui(application, main_widget.clone()));
