@@ -15,3 +15,6 @@ serde_json= "1.0"
 serde_yaml= "0.8"
 directories= "3.0"
 duplicate = "0.2"
+
+[profile.release]
+lto = true
