@@ -3,7 +3,12 @@ BIN_DIR = /usr/local/bin
 
 default: build
 
-install: build copy-bins copy-desktop-entry
+install: build strip copy-bins copy-desktop-entry
+
+install-nostrip: build copy-bins copy-desktop-entry
+
+strip:
+	strip ./target/release/dama
 
 uninstall:
 	sudo rm $(BIN_DIR)/dama
