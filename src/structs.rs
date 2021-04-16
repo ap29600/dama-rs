@@ -23,6 +23,11 @@ impl Into<gtk::Orientation> for OrientationSerial {
 }
 
 #[derive(Deserialize, Serialize, Clone)]
+pub struct Label {
+    pub text: String,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
 pub struct Box {
     #[serde( default )]
     pub title: String,
@@ -32,6 +37,10 @@ pub struct Box {
     pub children: Vec<SerializableWidget>
 }
 
+#[derive(Deserialize, Serialize, Clone)]
+pub struct Notebook {
+    pub children: Vec<SerializableWidget>,
+}
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct Image {
@@ -88,19 +97,12 @@ pub struct ComboBox {
 
 #[derive(Deserialize, Serialize, Clone)]
 pub enum SerializableWidget {
-    Notebook(Vec<SerializableWidget>), // children
-    Box(Box), // children
-    Label(String), // text
-    Image(Image), // path
-    Button(Button), // label, command
-    CheckBox(CheckBox), // label, initialize, update
-    Scale(Scale), // min, max, initialize, update
-    ComboBox(ComboBox),  // get list, get active, update
-}
-
-
-#[test]
-fn deserialization() {
-    let e = crate::ui_builder::generate_fallback_layout("hi".to_string());
-    assert_eq!("", serde_yaml::to_string(&e).unwrap());
+    Notebook(Notebook),
+    Box(Box),
+    Label(Label),
+    Image(Image),
+    Button(Button),
+    CheckBox(CheckBox),
+    Scale(Scale),
+    ComboBox(ComboBox),
 }

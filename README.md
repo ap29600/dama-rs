@@ -64,9 +64,10 @@ Available wigets are of types:
 ```yaml
 # shows one widget at a time
 Notebook :
-    -   # child 1
-    -   # child 2
-        # etc ... 
+  children:
+    -  # child 1
+    -  # child 2
+       # etc ... 
 
 # organizes other widgets
 Box : 
@@ -81,7 +82,8 @@ Box :
     -  # etc ... 
 
 # displays some text
-Label : "some text"
+Label:
+  text: "some text"
 
 # displays a picture
 Image : 
@@ -131,11 +133,9 @@ ComboBox :
 Or with the json syntax:
 
 ```json
-{ "Notebook" : [ 
-  { "child 1"},  
-  {"child 2"},
-  {" ... "} 
-]},
+{ "Notebook" : 
+  { "children": [ { "child 1"},  {"child 2"}, {" ... "} ] }
+},
 
 {"Box": { 
   "title": "Title",
@@ -143,7 +143,7 @@ Or with the json syntax:
   "children": [{ "child 1"},  {"child 2 ..."}] 
 }},
 
-{"Label" : "some text" },
+{"Label" : { "text":"some text" }},
 
 {"Image" : { "path":"/absolute/path/to/image" }},
 
