@@ -56,8 +56,7 @@ fn main() -> std::io::Result<()> {
     
     let widget = SerializableWidget::Notebook(widgets_list);
 
-    
-    let app = match Application::new(Some("com.andrea.example"), Default::default()) {
+    let app = match Application::new(Some("com.github.ap29600.Dama"), gio::ApplicationFlags::REPLACE | gio::ApplicationFlags::ALLOW_REPLACEMENT) {
         Ok(app) => app,
         Err(e)  => panic!("could not initialize application {}", e)
     }; // would be nice to use `?` here, but we would need to convert from `glib::error::BoolError`
