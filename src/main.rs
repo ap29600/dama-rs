@@ -36,7 +36,7 @@ fn main() -> std::io::Result<()> {
     
     let main_widget = 
         SerializableWidget::Notebook( 
-            Notebook { children: 
+            Notebook { css: None, children: 
                 config.split('\n').into_iter()
                     // take out the comments
                     .filter(|&line| {! line.starts_with("#")}) 

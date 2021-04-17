@@ -3,12 +3,33 @@ use crate::structs::*;
 use crate::watch::*;
 use gtk::prelude::*;
 
+#[macro_export]
+macro_rules! add_css{
+    ($css:expr, $($widget:expr),*) => (
+        {
+            $(
+                if let Some(css) = $css {
+                    let provider = gtk::CssProvider::new();
+                    match provider.load_from_data(css.as_bytes()) {
+                        Ok(_) => $widget
+                            .get_style_context()
+                            .add_provider(&provider,
+                                          gtk::STYLE_PROVIDER_PRIORITY_APPLICATION),
+                        Err(e) => eprint!("CSS: {}", e),
+                    }
+                }
+            )*
+        }
+    );
+}
+
 impl Into<gtk::ComboBoxText> for ComboBox {
     fn into(self) -> gtk::ComboBoxText {
         let ComboBox {
             initialize,
             select,
             on_update,
+            css,
         } = self;
 
         let combo = gtk::ComboBoxText::new();
@@ -33,6 +54,7 @@ impl Into<gtk::ComboBoxText> for ComboBox {
             std::env::set_var("DAMA_VAL", combo.get_active_text().unwrap());
             execute_shell_command(on_update.clone())
         });
+        add_css!(css, combo);
         combo
     }
 }
@@ -43,7 +65,9 @@ impl Into<gtk::Scale> for Scale {
             range,
             initialize,
             on_update,
+            css,
         } = self;
+
         let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, range.low, range.high, 5.);
         let initial_value = read_value_from_command::<f64>(initialize, range.low);
         scale.set_size_request(250, 12);
@@ -58,50 +82,69 @@ impl Into<gtk::Scale> for Scale {
             tx.clone().set_value(new_value);
             Inhibit(false)
         });
+        add_css!(css, scale);
         scale
     }
 }
 
 impl Into<gtk::Image> for Image {
     fn into(self) -> gtk::Image {
-        let image = gtk::Image::from_file(self.path);
+        let Image { path, css } = self;
+
+        let image = gtk::Image::from_file(path);
         image.set_margin_top(10);
         image.set_margin_bottom(10);
         image.set_margin_start(10);
         image.set_margin_end(10);
+        add_css!(css, image);
         image
     }
 }
 
 impl Into<gtk::Label> for Label {
     fn into(self) -> gtk::Label {
+        let Label { text, css } = self;
+
         let label = gtk::Label::new(None);
-        label.set_markup(&*self.text);
+        label.set_markup(&*text);
         label.set_line_wrap(true);
         label.set_xalign(0.0);
+        add_css!(css, label);
         label
     }
 }
 
 impl Into<gtk::CheckButton> for CheckBox {
     fn into(self) -> gtk::CheckButton {
-        let checkbox = gtk::CheckButton::with_label(&*self.text);
-        checkbox.set_active(read_value_from_command::<bool>(
-            self.initialize.clone(),
-            false,
-        ));
+        let CheckBox {
+            text,
+            initialize,
+            on_click,
+            css,
+        } = self;
+
+        let checkbox = gtk::CheckButton::with_label(&*text);
+        checkbox.set_active(read_value_from_command::<bool>(initialize, false));
         checkbox.connect_toggled(move |checkbox| {
             std::env::set_var("DAMA_VAL", checkbox.get_active().to_string());
-            execute_shell_command(self.on_click.clone());
+            execute_shell_command(on_click.clone());
         });
+        add_css!(css, checkbox);
         checkbox
     }
 }
 
 impl Into<gtk::Button> for Button {
     fn into(self) -> gtk::Button {
-        let button = gtk::Button::with_label(&*self.text);
-        button.connect_clicked(move |_| execute_shell_command(self.on_click.clone()));
+        let Button {
+            text,
+            on_click,
+            css,
+        } = self;
+
+        let button = gtk::Button::with_label(&*text);
+        button.connect_clicked(move |_| execute_shell_command(on_click.clone()));
+        add_css!(css, button);
         button
     }
 }
@@ -109,23 +152,32 @@ impl Into<gtk::Button> for Button {
 use crate::ui_builder::AddFromSerializable;
 impl Into<gtk::Notebook> for Notebook {
     fn into(self) -> gtk::Notebook {
+        let Notebook { children, css } = self;
         let nb = gtk::Notebook::new();
         nb.set_tab_pos(gtk::PositionType::Left);
-        for elem in self.children {
+        add_css!(css, nb);
+        for elem in children {
             nb.add_from(elem);
         }
         nb
     }
 }
 
-
-impl Into<gtk::Box> for Box{
+impl Into<gtk::Box> for Box {
     fn into(self) -> gtk::Box {
+        let Box {
+            title: _,
+            orientation,
+            children,
+            css,
+        } = self;
         let gtkbox = gtk::Box::new(
-            self.orientation.into(),
-            match self.orientation {
+            orientation.into(),
+            match orientation {
                 OrientationSerial::Horizontal => 30,
-                _ => 0 });
+                _ => 0,
+            },
+        );
         gtkbox.set_border_width(10);
         // would be nice to just stop listening to draw signals after the first one
         // but gtk does not expose a connect_first_draw() function or similar;
@@ -136,7 +188,7 @@ impl Into<gtk::Box> for Box{
             // intensive scripts only the ones you actually use
             // will be loaded.
             if gtkbox.get_children().len() == 0 {
-                for child in self.children.clone() {
+                for child in children.clone() {
                     gtkbox.add_from(child);
                 }
                 // if the first element is a label make
@@ -149,13 +201,14 @@ impl Into<gtk::Box> for Box{
                             true, // fill
                             12,   // padding
                             gtk::PackType::Start,
-                            );
+                        );
                     }
                 });
                 gtkbox.show_all();
             }
             Inhibit(false)
         });
+        add_css!(css, gtkbox);
         gtkbox
     }
 }

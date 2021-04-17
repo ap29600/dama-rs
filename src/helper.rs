@@ -38,3 +38,4 @@ pub fn read_value_from_command <T> (command: String, default: T) -> T
             .flatten().unwrap_or(default)
     }
 }
+
