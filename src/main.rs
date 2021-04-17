@@ -12,9 +12,10 @@ mod structs;
 mod helper;
 mod watch;
 mod ui_builder;
+mod conversions;
 
 use ui_builder::{deserialize_from_file, build_ui};
-use structs::SerializableWidget;
+use structs::{ SerializableWidget, Notebook };
 
 fn main() -> std::io::Result<()> {
     
@@ -34,16 +35,17 @@ fn main() -> std::io::Result<()> {
         f.read_to_string(&mut config)?;} 
     
     let main_widget = 
-        SerializableWidget::Notebook(
-            config.split('\n').into_iter()
-            // take out the comments
-            .filter(|&line| {! line.starts_with("#")}) 
-            // take out empty lines
-            .filter(|&line| {! line.is_empty()}) 
-            // make a new page out of every file found
-            .map( deserialize_from_file )
-            .collect() 
-            );
+        SerializableWidget::Notebook( 
+            Notebook { children: 
+                config.split('\n').into_iter()
+                    // take out the comments
+                    .filter(|&line| {! line.starts_with("#")}) 
+                    // take out empty lines
+                    .filter(|&line| {! line.is_empty()}) 
+                    // make a new page out of every file found
+                    .map( deserialize_from_file )
+                    .collect() 
+            });
 
     // try to create a new application, if that fails then just return an error and quit 
     let app = Application::new(Some("com.github.ap29600.Dama"), gio::ApplicationFlags::REPLACE | gio::ApplicationFlags::ALLOW_REPLACEMENT)
