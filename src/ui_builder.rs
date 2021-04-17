@@ -3,12 +3,22 @@ use gtk::{prelude::*, Application, ApplicationWindow};
 
 // accepts a widget intermediate representation and an application,
 // constructs a new window and populates it with the widgets
-pub fn build_ui(app: &Application, widget: SerializableWidget) {
+pub fn build_ui(app: &Application, widget: SerializableWidget, css_path: Option<String>) {
     // generic gtk boiler plate
     let win = ApplicationWindow::new(app);
     win.set_title("Dama - Menu");
     win.set_border_width(10);
     win.set_position(gtk::WindowPosition::Center);
+    if let Some(css_path) = css_path {
+        let screen = gdk::Screen::get_default().unwrap();
+        let style_provider = gtk::CssProvider::new();
+        match style_provider.load_from_path(&*css_path) {
+            Ok(_) => gtk::StyleContext::add_provider_for_screen(&screen, &style_provider, 0),
+            Err(e) => eprint!("{}", e),
+        }
+    } else {
+        eprint!("No css stylesheet was found");
+    }
 
     // construct a widget from the intermediate representation
     win.add_from(widget);
