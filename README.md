@@ -59,7 +59,7 @@ if that file doesn't exist, dama will try to read from `$HOME/.dama/config`.
 each line of your `config` should be the full path to a yaml or json file describing a menu page.
 This page must consist of exactly one top-level widget, which may have children.
 
-**this format of configuration is going to be deprecated in version 1.3. Please refer to the better-config branch**
+**this format of configuration is going to be deprecated in version 1.3. Please refer to the experimental branch**
 
 Available wigets are of types:
 
