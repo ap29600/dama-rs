@@ -32,6 +32,7 @@ changes might still be made to layout styling / anything that doesn't involve us
   - [ ] dynamically resize the image
 - [x] add support for checkbox widgets
 - [x] style the layout in a sensible way
+  - [x] import a CSS stylesheet
   - [x] allow setting names for tabs
   - [x] move the tab list to the side
 
@@ -48,7 +49,12 @@ just run the command:
 make install
 ```
 
-## writing your own menu entries
+## Styling
+
+Dama will parse a css file located at either `$XDG_CONFIG_HOME/dama/style.css` or `$HOME/.dama/style.css`, 
+with the former taking precedence.
+
+## Configuration
 
 menu entries are read from locations listed in a file called `config`.
 The program will look for it in `$XDG_CONFIG_HOME/dama/` 
@@ -60,6 +66,7 @@ each line of your `config` should be the full path to a yaml or json file descri
 This page must consist of exactly one top-level widget, which may have children.
 
 **this format of configuration is going to be deprecated in version 1.3. Please refer to the better-config branch**
+
 
 Available wigets are of types:
 
@@ -166,6 +173,10 @@ Or with the json syntax:
   "select": "initial command", 
   "on_update": "update command" }}
 ```
+
+All widgets additionally accept the `css` field, which should be a string containing valid css code.
+Properties set this way are not inherited, so this is more for precision/tweaking the appearance of
+single widgets.
 
 A toplevel `Notebook` is implicitly added as a container for your pages. page names are handled
 by reading the label of a top-level box, and user-defined Notebooks also behave this way.
