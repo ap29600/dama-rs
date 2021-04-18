@@ -25,6 +25,7 @@ impl Into<gtk::Orientation> for OrientationSerial {
 pub struct Label {
     pub text: String,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -36,18 +37,21 @@ pub struct Box {
     #[serde(default)]
     pub children: Vec<SerializableWidget>,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct Notebook {
     pub children: Vec<SerializableWidget>,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct Image {
     pub path: String,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -56,6 +60,7 @@ pub struct Button {
     pub text: String,
     pub on_click: String,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 fn default_button_label() -> String {
     "Button".to_string()
@@ -68,6 +73,7 @@ pub struct CheckBox {
     pub initialize: String,
     pub on_click: String,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -92,6 +98,7 @@ pub struct Scale {
     pub initialize: String,
     pub on_update: String,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 
 //TODO: implement sane defaults for the select command
@@ -101,6 +108,7 @@ pub struct ComboBox {
     pub select: String,
     pub on_update: String,
     pub css: Option<String>,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]

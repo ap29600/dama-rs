@@ -31,8 +31,9 @@ pub fn generate_fallback_layout(text: String) -> SerializableWidget {
     SerializableWidget::Box(crate::structs::Box {
         title: String::from("Error"),
         orientation: crate::structs::OrientationSerial::Horizontal,
-        children: vec![SerializableWidget::Label(Label { text, css: None })],
+        children: vec![SerializableWidget::Label(Label { text, css: None, name: Some(String::from("errorlabel")) })],
         css: None,
+        name: Some(String::from("errorpage")),
     })
 }
 

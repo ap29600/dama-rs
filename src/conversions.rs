@@ -23,6 +23,19 @@ macro_rules! add_css{
     );
 }
 
+#[macro_export]
+macro_rules! add_name{
+    ($name:expr, $($widget:expr),*) => (
+        {
+            $(
+                if let Some(name) = $name {
+                    $widget.set_widget_name(&*name);
+                }
+            )*
+        }
+    );
+}
+
 impl Into<gtk::ComboBoxText> for ComboBox {
     fn into(self) -> gtk::ComboBoxText {
         let ComboBox {
@@ -30,6 +43,7 @@ impl Into<gtk::ComboBoxText> for ComboBox {
             select,
             on_update,
             css,
+            name,
         } = self;
 
         let combo = gtk::ComboBoxText::new();
@@ -54,6 +68,7 @@ impl Into<gtk::ComboBoxText> for ComboBox {
             std::env::set_var("DAMA_VAL", combo.get_active_text().unwrap());
             execute_shell_command(on_update.clone())
         });
+        add_name!(name, combo);
         add_css!(css, combo);
         combo
     }
@@ -66,6 +81,7 @@ impl Into<gtk::Scale> for Scale {
             initialize,
             on_update,
             css,
+            name,
         } = self;
 
         let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, range.low, range.high, 5.);
@@ -82,6 +98,7 @@ impl Into<gtk::Scale> for Scale {
             tx.clone().set_value(new_value);
             Inhibit(false)
         });
+        add_name!(name, scale);
         add_css!(css, scale);
         scale
     }
@@ -89,13 +106,14 @@ impl Into<gtk::Scale> for Scale {
 
 impl Into<gtk::Image> for Image {
     fn into(self) -> gtk::Image {
-        let Image { path, css } = self;
+        let Image { path, css, name } = self;
 
         let image = gtk::Image::from_file(path);
         image.set_margin_top(10);
         image.set_margin_bottom(10);
         image.set_margin_start(10);
         image.set_margin_end(10);
+        add_name!(name, image);
         add_css!(css, image);
         image
     }
@@ -103,12 +121,13 @@ impl Into<gtk::Image> for Image {
 
 impl Into<gtk::Label> for Label {
     fn into(self) -> gtk::Label {
-        let Label { text, css } = self;
+        let Label { text, css, name } = self;
 
         let label = gtk::Label::new(None);
         label.set_markup(&*text);
         label.set_line_wrap(true);
         label.set_xalign(0.0);
+        add_name!(name, label);
         add_css!(css, label);
         label
     }
@@ -121,6 +140,7 @@ impl Into<gtk::CheckButton> for CheckBox {
             initialize,
             on_click,
             css,
+            name,
         } = self;
 
         let checkbox = gtk::CheckButton::with_label(&*text);
@@ -129,6 +149,7 @@ impl Into<gtk::CheckButton> for CheckBox {
             std::env::set_var("DAMA_VAL", checkbox.get_active().to_string());
             execute_shell_command(on_click.clone());
         });
+        add_name!(name, checkbox);
         add_css!(css, checkbox);
         checkbox
     }
@@ -140,10 +161,12 @@ impl Into<gtk::Button> for Button {
             text,
             on_click,
             css,
+            name,
         } = self;
 
         let button = gtk::Button::with_label(&*text);
         button.connect_clicked(move |_| execute_shell_command(on_click.clone()));
+        add_name!(name, button);
         add_css!(css, button);
         button
     }
@@ -152,14 +175,19 @@ impl Into<gtk::Button> for Button {
 use crate::ui_builder::AddFromSerializable;
 impl Into<gtk::Notebook> for Notebook {
     fn into(self) -> gtk::Notebook {
-        let Notebook { children, css } = self;
-        let nb = gtk::Notebook::new();
-        nb.set_tab_pos(gtk::PositionType::Left);
-        add_css!(css, nb);
-        for elem in children {
-            nb.add_from(elem);
+        let Notebook {
+            children,
+            css,
+            name,
+        } = self;
+        let notebook = gtk::Notebook::new();
+        notebook.set_tab_pos(gtk::PositionType::Left);
+        add_name!(name, notebook);
+        add_css!(css, notebook);
+        for child in children {
+            notebook.add_from(child);
         }
-        nb
+        notebook
     }
 }
 
@@ -170,6 +198,7 @@ impl Into<gtk::Box> for Box {
             orientation,
             children,
             css,
+            name,
         } = self;
         let gtkbox = gtk::Box::new(
             orientation.into(),
@@ -208,6 +237,7 @@ impl Into<gtk::Box> for Box {
             }
             Inhibit(false)
         });
+        add_name!(name, gtkbox);
         add_css!(css, gtkbox);
         gtkbox
     }
