@@ -27,33 +27,38 @@ pub fn build_ui(app: &Application, widget: SerializableWidget, css_path: Option<
 }
 
 // helper to make an error page out of a string
+use crate::structs::SerializableWidget::Label;
+use crate::structs::OrientationSerial::*;
 pub fn generate_fallback_layout(text: String) -> SerializableWidget {
     SerializableWidget::Box(crate::structs::Box {
-        title: String::from("Error"),
-        orientation: crate::structs::OrientationSerial::Horizontal,
-        children: vec![SerializableWidget::Label(Label { text, css: None, name: Some(String::from("errorlabel")) })],
+        title: "Error".to_string(),
+        orientation: Horizontal,
+        children: vec![ Label( crate::structs::Label {
+            text, css: None, name: Some("errorlabel".to_string()) 
+        })],
         css: None,
-        name: Some(String::from("errorpage")),
+        name: Some("errorpage".to_string()),
     })
 }
 
 // reads a widget description from file and generates
 // an intermediate representation with serde
 use std::io::Read;
+use std::boxed::Box;
 pub fn deserialize_from_file(file_name: &str) -> SerializableWidget {
     // this is declared here to be dropped after the closure it is passed to
     let mut file_contents = String::new();
 
     // here we determine the deserializer we need to use
-    let deserializer: std::boxed::Box<dyn Fn(_) -> Option<SerializableWidget>>;
+    let deserializer: Box<dyn Fn(_) -> Option<SerializableWidget>>;
     if file_name.ends_with(".yml") {
-        deserializer = std::boxed::Box::new(|file| serde_yaml::from_str(file).ok());
-    } else if file_name.ends_with("json") {
-        deserializer = std::boxed::Box::new(|file| serde_json::from_str(file).ok());
+        deserializer = Box::new(|file| serde_yaml::from_str(file).ok());
+    } else if file_name.ends_with(".json") {
+        deserializer = Box::new(|file| serde_json::from_str(file).ok());
     } else {
         return generate_fallback_layout(format!(
-            "this file does not have a supported extension: {};\n\
-                     Supported file extensions are .json and .yml",
+            "this file does not have a supported extension: \"{}\";\n\
+                     Supported file extensions are \".json\" and \".yml\"",
             file_name
         ));
     }
@@ -111,8 +116,6 @@ impl ContainerMaybeWithLabel for SimpleContainer {
         self.add(element);
     }
 }
-
-use crate::structs::*;
 
 pub trait AddFromSerializable {
     fn add_from(&self, obj: SerializableWidget);
