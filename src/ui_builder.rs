@@ -13,7 +13,7 @@ pub fn build_ui(app: &Application, widget: SerializableWidget, css_path: Option<
         let screen = gdk::Screen::get_default().unwrap();
         let style_provider = gtk::CssProvider::new();
         match style_provider.load_from_path(&*css_path) {
-            Ok(_) => gtk::StyleContext::add_provider_for_screen(&screen, &style_provider, 0),
+            Ok(_) => gtk::StyleContext::add_provider_for_screen(&screen, &style_provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION),
             Err(e) => eprint!("{}", e),
         }
     } else {

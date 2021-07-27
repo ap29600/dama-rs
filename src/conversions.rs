@@ -14,7 +14,7 @@ macro_rules! add_css{
                         Ok(_) => $widget
                             .get_style_context()
                             .add_provider(&provider,
-                                          gtk::STYLE_PROVIDER_PRIORITY_APPLICATION),
+                                          gtk::STYLE_PROVIDER_PRIORITY_USER),
                         Err(e) => eprint!("CSS: {}", e),
                     }
                 }

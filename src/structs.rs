@@ -111,6 +111,7 @@ pub struct ComboBox {
     pub name: Option<String>,
 }
 
+
 #[derive(Deserialize, Serialize, Clone)]
 pub enum SerializableWidget {
     Notebook(Notebook),
@@ -122,3 +123,4 @@ pub enum SerializableWidget {
     Scale(Scale),
     ComboBox(ComboBox),
 }
+
