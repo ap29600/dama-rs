@@ -1,26 +1,16 @@
 Box : 
-    - "Brightness and notifications"
-    - "Vertical"
-    -   - Box : 
-            - ""
-            - "Horizontal"
-            -   - Label : "Some buttons to launch the missiles"
-                - Button :
-                    - "hello" 
-                    - "notify-send hello"
-                - Button : 
-                    - "world"
-                    - "notify-send world"
-        - Box :  # this is here to keep the label padded consistently with other objects
-            - ""
-            - "Horizontal"
-            -   - Label : "A <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"
-        - Box : 
-            - ""
-            - "Horizontal"
-            -   - Label: "A slider to control backlight!"
-                - Scale: 
-                    - 0.0
-                    - 100.0
-                    - "xbacklight -get"
-                    - "xbacklight -set $DAMA_VAL"
+  title: "Demo page"
+  orientation: "Vertical"
+  children:
+    - Box : 
+        children:
+          - Label : { text: "Some buttons to launch the missiles" }
+          - Button : { text: "hello", on_click: "notify-send hello" }
+          - Button : { text: "world", on_click: "notify-send world" }
+    - Box : {  children: [ Label: { text: "A <b>label</b> supporting <span background=\"yellow\"> pango markup </span>"}]}
+    - Box : 
+        children: 
+          - Label: { text:  "A slider to control backlight!" }
+          - Scale: 
+              initialize: "xbacklight -get"
+              on_update: "xbacklight -set $DAMA_VAL"
