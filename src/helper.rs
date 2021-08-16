@@ -32,7 +32,7 @@ pub fn get_configuration() -> (String, Option<String>) {
 
 pub fn execute_shell_command(command: String) {
     match std::process::Command::new("sh").arg("-c")
-        .arg(command.clone()).output() {
+        .arg(command).output() {
             Ok(_) => (),
             Err(e) => eprint!("{}", e)
         }
@@ -58,7 +58,7 @@ pub fn read_value_from_command <T> (command: String, default: T) -> T
         "" => { eprint!( "Output was empty for command:\n > {}\n, falling back to default value", 
                          command);
             default } ,
-        output => output.split("\n").next()
+        output => output.split('\n').next()
             .map(|line| match line.parse() {
                      Ok(val) => Some(val), 
                      Err(e) => {eprint!("{:?}",e);None}

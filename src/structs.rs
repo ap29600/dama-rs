@@ -12,9 +12,9 @@ impl Default for OrientationSerial {
     }
 }
 
-impl Into<gtk::Orientation> for OrientationSerial {
-    fn into(self) -> gtk::Orientation {
-        match self {
+impl From<OrientationSerial > for gtk::Orientation{
+    fn from (o : OrientationSerial) -> gtk::Orientation {
+        match o {
             OrientationSerial::Vertical => gtk::Orientation::Vertical,
             OrientationSerial::Horizontal => gtk::Orientation::Horizontal,
         }

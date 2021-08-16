@@ -13,7 +13,11 @@ pub fn build_ui(app: &Application, widget: SerializableWidget, css_path: Option<
         let screen = gdk::Screen::get_default().unwrap();
         let style_provider = gtk::CssProvider::new();
         match style_provider.load_from_path(&*css_path) {
-            Ok(_) => gtk::StyleContext::add_provider_for_screen(&screen, &style_provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION),
+            Ok(_) => gtk::StyleContext::add_provider_for_screen(
+                &screen,
+                &style_provider,
+                gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+            ),
             Err(e) => eprint!("{}", e),
         }
     } else {
@@ -27,14 +31,16 @@ pub fn build_ui(app: &Application, widget: SerializableWidget, css_path: Option<
 }
 
 // helper to make an error page out of a string
-use crate::structs::SerializableWidget::Label;
 use crate::structs::OrientationSerial::*;
+use crate::structs::SerializableWidget::Label;
 pub fn generate_fallback_layout(text: String) -> SerializableWidget {
     SerializableWidget::Box(crate::structs::Box {
         title: "Error".to_string(),
         orientation: Horizontal,
-        children: vec![ Label( crate::structs::Label {
-            text, css: None, name: Some("errorlabel".to_string()) 
+        children: vec![Label(crate::structs::Label {
+            text,
+            css: None,
+            name: Some("errorlabel".to_string()),
         })],
         css: None,
         name: Some("errorpage".to_string()),
@@ -43,8 +49,8 @@ pub fn generate_fallback_layout(text: String) -> SerializableWidget {
 
 // reads a widget description from file and generates
 // an intermediate representation with serde
-use std::io::Read;
 use std::boxed::Box;
+use std::io::Read;
 pub fn deserialize_from_file(file_name: &str) -> SerializableWidget {
     // this is declared here to be dropped after the closure it is passed to
     let mut file_contents = String::new();
@@ -64,10 +70,11 @@ pub fn deserialize_from_file(file_name: &str) -> SerializableWidget {
     }
 
     // try to read from file
-    if let Some(_) = std::fs::File::open(file_name.clone())
+    if std::fs::File::open(file_name)
         .ok()
         .map(|mut f| f.read_to_string(&mut file_contents).ok())
         .flatten()
+        .is_some()
     // the flatten makes sure we catch errors both  opening and reading the file
     {
         match &*file_contents {
@@ -79,7 +86,7 @@ pub fn deserialize_from_file(file_name: &str) -> SerializableWidget {
             //  otherwise, try to deserialize
             widget_string => deserializer(widget_string)
                 // if that fails then make an error including the faulty file
-                .unwrap_or(generate_fallback_layout(format!(
+                .unwrap_or_else( || generate_fallback_layout(format!(
                     "could not deserialize: \n{}",
                     widget_string
                 ))),

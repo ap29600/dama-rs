@@ -22,7 +22,7 @@ fn main() {
         children: config_buffer
             .split('\n')
             .into_iter()
-            .filter(|&line| !(line.starts_with("#") || line.is_empty()))
+            .filter(|&line| !(line.starts_with('#') || line.is_empty()))
             .map(deserialize_from_file)
             .collect(),
     });

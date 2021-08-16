@@ -36,28 +36,27 @@ macro_rules! add_name{
     );
 }
 
-impl Into<gtk::ComboBoxText> for ComboBox {
-    fn into(self) -> gtk::ComboBoxText {
+impl From<ComboBox> for gtk::ComboBoxText {
+    fn from(bx: ComboBox) -> Self {
         let ComboBox {
             initialize,
             select,
             on_update,
             css,
             name,
-        } = self;
+        } = bx;
 
         let combo = gtk::ComboBoxText::new();
         let rawoptions = read_stdout_from_command(initialize);
         let options = rawoptions
-            .split("\n")
+            .split('\n')
             .filter(|line| !line.is_empty())
             .collect::<Vec<_>>();
 
         let active = options
             .iter()
             .position(move |entry| {
-                entry.to_string()
-                    == read_value_from_command(select.clone(), "".to_string()).to_string()
+                *entry == read_value_from_command(select.clone(), "".to_string())
             })
             .map(|i| i as u32);
         for entry in options {
@@ -74,15 +73,15 @@ impl Into<gtk::ComboBoxText> for ComboBox {
     }
 }
 
-impl Into<gtk::Scale> for Scale {
-    fn into(self) -> gtk::Scale {
+impl From<Scale> for gtk::Scale {
+    fn from(sc: Scale) -> Self {
         let Scale {
             range,
             initialize,
             on_update,
             css,
             name,
-        } = self;
+        } = sc;
 
         let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, range.low, range.high, 5.);
         let initial_value = read_value_from_command::<f64>(initialize, range.low);
@@ -104,9 +103,9 @@ impl Into<gtk::Scale> for Scale {
     }
 }
 
-impl Into<gtk::Image> for Image {
-    fn into(self) -> gtk::Image {
-        let Image { path, css, name } = self;
+impl From<Image> for gtk::Image {
+    fn from(im: Image) -> Self {
+        let Image { path, css, name } = im;
 
         let image = gtk::Image::from_file(path);
         image.set_margin_top(10);
@@ -119,9 +118,9 @@ impl Into<gtk::Image> for Image {
     }
 }
 
-impl Into<gtk::Label> for Label {
-    fn into(self) -> gtk::Label {
-        let Label { text, css, name } = self;
+impl From<Label> for gtk::Label {
+    fn from(lb: Label) -> Self {
+        let Label { text, css, name } = lb;
 
         let label = gtk::Label::new(None);
         label.set_markup(&*text);
@@ -133,15 +132,15 @@ impl Into<gtk::Label> for Label {
     }
 }
 
-impl Into<gtk::CheckButton> for CheckBox {
-    fn into(self) -> gtk::CheckButton {
+impl From<CheckBox> for gtk::CheckButton {
+    fn from(cb: CheckBox) -> Self {
         let CheckBox {
             text,
             initialize,
             on_click,
             css,
             name,
-        } = self;
+        } = cb;
 
         let checkbox = gtk::CheckButton::with_label(&*text);
         checkbox.set_active(read_value_from_command::<bool>(initialize, false));
@@ -155,14 +154,14 @@ impl Into<gtk::CheckButton> for CheckBox {
     }
 }
 
-impl Into<gtk::Button> for Button {
-    fn into(self) -> gtk::Button {
+impl From<Button> for gtk::Button {
+    fn from(bt: Button) -> Self {
         let Button {
             text,
             on_click,
             css,
             name,
-        } = self;
+        } = bt;
 
         let button = gtk::Button::with_label(&*text);
         button.connect_clicked(move |_| execute_shell_command(on_click.clone()));
@@ -173,13 +172,13 @@ impl Into<gtk::Button> for Button {
 }
 
 use crate::ui_builder::AddFromSerializable;
-impl Into<gtk::Notebook> for Notebook {
-    fn into(self) -> gtk::Notebook {
+impl From<Notebook> for gtk::Notebook {
+    fn from(nb: Notebook) -> Self {
         let Notebook {
             children,
             css,
             name,
-        } = self;
+        } = nb;
         let notebook = gtk::Notebook::new();
         notebook.set_tab_pos(gtk::PositionType::Left);
         add_name!(name, notebook);
@@ -191,15 +190,15 @@ impl Into<gtk::Notebook> for Notebook {
     }
 }
 
-impl Into<gtk::Box> for Box {
-    fn into(self) -> gtk::Box {
+impl From<Box> for gtk::Box {
+    fn from(b: Box) -> Self {
         let Box {
             title: _,
             orientation,
             children,
             css,
             name,
-        } = self;
+        } = b;
         let gtkbox = gtk::Box::new(
             orientation.into(),
             match orientation {
@@ -216,13 +215,13 @@ impl Into<gtk::Box> for Box {
             // this way if you have many pages running
             // intensive scripts only the ones you actually use
             // will be loaded.
-            if gtkbox.get_children().len() == 0 {
+            if gtkbox.get_children().is_empty() {
                 for child in children.clone() {
                     gtkbox.add_from(child);
                 }
                 // if the first element is a label make
                 // it expand to push other stuff aside
-                gtkbox.get_children().iter().next().map(|w| {
+                if let Some(w) = gtkbox.get_children().get(0) {
                     if w.is::<gtk::Label>() {
                         gtkbox.set_child_packing(
                             w,
@@ -232,7 +231,7 @@ impl Into<gtk::Box> for Box {
                             gtk::PackType::Start,
                         );
                     }
-                });
+                }
                 gtkbox.show_all();
             }
             Inhibit(false)
