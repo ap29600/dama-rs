@@ -2,30 +2,28 @@ use std::{fmt::Debug, str::FromStr};
 use std::process::{Command, Output};
 
 
-use std::fs::File;
-use std::io::Read;
-pub fn get_configuration() -> (String, Option<String>) {
+pub fn get_configuration() -> (Option<String>, Option<String>) {
     let base_dirs = directories::BaseDirs::new().unwrap();
 
     let dot_config_main_file = base_dirs.config_dir().to_path_buf().join("dama/config");
     let home_main_file = base_dirs.home_dir().to_path_buf().join(".dama/config");
-    let mut config_buffer = String::new();
-    [dot_config_main_file, home_main_file]
-        .iter()
-        .find_map(|path| if path.is_file() { Some(path) } else { None })
-        .map(|path| File::open(path)?.read_to_string(&mut config_buffer));
 
     let dot_config_css_file = base_dirs.config_dir().to_path_buf().join("dama/style.css");
     let home_css_file = base_dirs.home_dir().to_path_buf().join(".dama/style.css");
-    let css_path = [dot_config_css_file, home_css_file]
-        .iter()
-        .find_map(move |path| 
-            if path.is_file() {
-                path.clone().into_os_string().into_string().ok()
-            }  else {None}
-    );
 
-    (config_buffer, css_path)
+    let config_path = [dot_config_main_file, home_main_file]
+        .iter().find_map(|path| 
+                         if path.is_file() { 
+                             path.clone().into_os_string().into_string().ok()
+                         } else { None });
+
+    let css_path = [dot_config_css_file, home_css_file]
+        .iter().find_map(|path| 
+                         if path.is_file() {
+                             path.clone().into_os_string().into_string().ok()
+                         }  else {None});
+
+    (config_path, css_path)
 }
 
 

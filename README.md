@@ -51,19 +51,24 @@ make install
 
 ## Styling
 
-Dama will parse a css file located at either `$XDG_CONFIG_HOME/dama/style.css` or `$HOME/.dama/style.css`, 
-with the former taking precedence.
+Dama will parse a css file located at either `$XDG_CONFIG_HOME/dama/style.css`
+or `$HOME/.dama/style.css`, with the former taking precedence.
 
 ## Configuration
 
-menu entries are read from locations listed in a file called `config`.
-The program will look for it in `$XDG_CONFIG_HOME/dama/` 
-if the variable is set, or in `$HOME/.config/dama` if it is not.
+menu entries are read from locations listed in a file called `config`. The
+program will look for it in `$XDG_CONFIG_HOME/dama/` if the variable is set, or
+in `$HOME/.config/dama` if it is not.
 
 if that file doesn't exist, dama will try to read from `$HOME/.dama/config`.
 
-each line of your `config` should be the full path to a yaml or json file describing a menu page.
-This page must consist of exactly one top-level widget, which may have children.
+each line of your `config` should be the full path to a yaml or json file
+describing a menu page. This page must consist of exactly one top-level widget,
+which may have children.
+
+you can specify single pages to be loaded as command-line arguments, for
+example `dama -p:/home/user/page1.yml -p:/home/user/page2.yml`, in which case
+the configuration file is never read. The paths need to be absoltue.
 
 
 Available wigets are of types:
