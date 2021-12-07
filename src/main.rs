@@ -17,11 +17,15 @@ use ui_builder::{build_ui, deserialize_from_file};
 
 fn main() {
 
+    let mut remaining_args = vec![];
     let pages_from_args = args()
         .filter_map(|mut arg| 
                     if arg.starts_with("-p:") {
                         Some(arg.split_off(3)) 
-                    } else {None} 
+                    } else {
+                        remaining_args.push(arg);
+                        None
+                    } 
                     ).collect::<Vec<_>>();
 
     let pages: Vec<SerializableWidget>;
@@ -61,7 +65,7 @@ fn main() {
         app.connect_activate(move |application| {
             build_ui(application, main_widget.clone(), css_path.clone())
         });
-        app.run(&args().collect::<Vec<_>>());
+        app.run(&remaining_args);
     } else {
         eprint!("Could not create a new gtk application.");
     }
