@@ -50,22 +50,32 @@ impl From<ComboBox> for gtk::ComboBoxText {
         let rawoptions = read_stdout_from_command(initialize);
         let options = rawoptions
             .split('\n')
-            .filter(|line| !line.is_empty())
+            .filter(|&line| !line.is_empty())
+            .map(|line| line.to_string())
             .collect::<Vec<_>>();
 
         let active = options
             .iter()
-            .position(move |entry| {
+            .position(|entry| {
                 *entry == read_value_from_command(select.clone(), "".to_string())
             })
             .map(|i| i as u32);
-        for entry in options {
+        for entry in &options {
             combo.append(None, entry);
         }
         combo.set_active(active);
         combo.connect_changed(move |combo| {
             std::env::set_var("DAMA_VAL", combo.get_active_text().unwrap());
-            execute_shell_command(on_update.clone())
+            // if the command was not successful, we run the init script again
+            if !execute_shell_command(on_update.clone()) {
+                let now_active = options
+                    .iter()
+                    .position(|entry| {
+                        *entry == read_value_from_command(select.clone(), "".to_string())
+                    })
+                    .map(|i| i as u32);
+                combo.set_active(now_active);
+            }
         });
         add_name!(name, combo);
         add_css!(css, combo);
@@ -164,7 +174,7 @@ impl From<Button> for gtk::Button {
         } = bt;
 
         let button = gtk::Button::with_label(&*text);
-        button.connect_clicked(move |_| execute_shell_command(on_click.clone()));
+        button.connect_clicked(move |_| {execute_shell_command(on_click.clone());});
         add_name!(name, button);
         add_css!(css, button);
         button

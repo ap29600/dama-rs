@@ -19,13 +19,13 @@ fn main() {
 
     let mut remaining_args = vec![];
     let pages_from_args = args()
-        .filter_map(|mut arg| 
+        .filter_map(|mut arg|
                     if arg.starts_with("-p:") {
-                        Some(arg.split_off(3)) 
+                        Some(arg.split_off(3))
                     } else {
                         remaining_args.push(arg);
                         None
-                    } 
+                    }
                     ).collect::<Vec<_>>();
 
     let pages: Vec<SerializableWidget>;

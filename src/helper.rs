@@ -28,11 +28,11 @@ pub fn get_configuration() -> (Option<String>, Option<String>) {
 
 
 
-pub fn execute_shell_command(command: String) {
+pub fn execute_shell_command(command: String) -> bool {
     match std::process::Command::new("sh").arg("-c")
         .arg(command).output() {
-            Ok(_) => (),
-            Err(e) => eprint!("{}", e)
+            Ok(output) => output.status.success(),
+            Err(e) => { eprint!("{}", e); false }
         }
 }
 
