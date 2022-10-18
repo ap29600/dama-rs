@@ -74,6 +74,7 @@ pub struct CheckBox {
     pub on_click: String,
     pub css: Option<String>,
     pub name: Option<String>,
+    pub watch: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -99,6 +100,7 @@ pub struct Scale {
     pub on_update: String,
     pub css: Option<String>,
     pub name: Option<String>,
+    pub watch: Option<String>,
 }
 
 //TODO: implement sane defaults for the select command

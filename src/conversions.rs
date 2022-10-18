@@ -1,7 +1,10 @@
+use std::path::Path;
 use crate::helper::*;
 use crate::structs::*;
 use crate::watch::*;
 use gtk::prelude::*;
+use notify::{Watcher, RecursiveMode};
+use glib;
 
 #[macro_export]
 macro_rules! add_css{
@@ -91,12 +94,48 @@ impl From<Scale> for gtk::Scale {
             on_update,
             css,
             name,
+            watch,
         } = sc;
 
         let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, range.low, range.high, 5.);
-        let initial_value = read_value_from_command::<f64>(initialize, range.low);
+        let initial_value = read_value_from_command::<f64>(initialize.clone(), range.low);
         scale.set_size_request(250, 12);
         scale.set_value(initial_value);
+
+        if let Some(watch) = watch {
+
+            let (tx, rx) = glib::MainContext::channel(glib::Priority::default());
+            std::thread::spawn(move ||  {
+                let mut watcher = notify::recommended_watcher(move |res: Result<notify::Event,_>| {
+                    match res {
+                        Ok(event) => match event.kind {
+                            notify::EventKind::Modify(_) => {
+                                let new_val = read_value_from_command::<f64>(initialize.clone(), range.low);
+                                tx.send(new_val).ok().unwrap();
+                            },
+                            _ => (),
+                        },
+                        Err(error) => println!("[ERROR] {:?}", error),
+                    }
+                }).unwrap();
+                watcher.watch(Path::new(&watch), RecursiveMode::Recursive).ok();
+                // the thread needs to remain alive, otherwise the watcher will be dropped..
+                loop {
+                    std::thread::yield_now();
+                }
+            });
+
+            let scale_clone = scale.clone();
+            rx.attach(None, move |msg| {
+                // TODO: check if the scale is being dragged, and in that case
+                // avoid changing the value.
+                if !scale_clone.get_state_flags().contains(gtk::StateFlags::ACTIVE | gtk::StateFlags::PRELIGHT) {
+                    scale_clone.set_value(msg);
+                }
+                glib::Continue(true)
+            });
+        }
+
         let tx = Watch::new(initial_value);
         let mut rx = tx.clone();
         std::thread::spawn(move || loop {
@@ -150,14 +189,54 @@ impl From<CheckBox> for gtk::CheckButton {
             on_click,
             css,
             name,
+            watch,
         } = cb;
 
         let checkbox = gtk::CheckButton::with_label(&*text);
-        checkbox.set_active(read_value_from_command::<bool>(initialize, false));
+        let initial_value = read_value_from_command::<bool>(initialize.clone(), false);
+
+        if let Some(watch) = watch {
+
+            let (tx, rx) = glib::MainContext::channel(glib::Priority::default());
+
+            std::thread::spawn(move ||  {
+                let mut watcher = notify::recommended_watcher(move |res: Result<notify::Event,_>| {
+                    match res {
+                        Ok(event) => match event.kind {
+                            notify::EventKind::Modify(_) => {
+                                let new_val = read_value_from_command::<bool>(initialize.clone(), false);
+                                tx.send(new_val).ok().unwrap();
+                            },
+                            _ => (),
+                        },
+                        Err(error) => println!("[ERROR] {:?}", error),
+                    }
+                }).unwrap();
+
+                watcher.watch(Path::new(&watch), RecursiveMode::Recursive).ok();
+
+                // the thread needs to remain alive, otherwise the watcher will be dropped..
+                loop {
+                    std::thread::yield_now();
+                }
+            });
+
+            let checkbox_clone = checkbox.clone();
+            rx.attach(None, move |msg| {
+                if checkbox_clone.get_active() != msg {
+                    checkbox_clone.set_active(msg);
+                }
+                glib::Continue(true)
+            });
+
+        }
+
+        checkbox.set_active(initial_value);
         checkbox.connect_toggled(move |checkbox| {
             std::env::set_var("DAMA_VAL", checkbox.get_active().to_string());
             execute_shell_command(on_click.clone());
         });
+
         add_name!(name, checkbox);
         add_css!(css, checkbox);
         checkbox
