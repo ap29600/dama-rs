@@ -37,12 +37,12 @@ pub fn execute_shell_command(command: String) -> bool {
 }
 
 
-pub fn read_stdout_from_command (command: String) -> String {
-    match Command::new("sh").arg("-c").arg(command).output() {
+pub fn read_stdout_from_command (command: &str) -> String {
+    match Command::new("sh").arg("-c").arg(command.to_string()).output() {
         Err(e) => { println!("error while running command: {}", e); "".to_string() },
         Ok(Output{status: _ , stdout: utf_8_vec, stderr: _}) => 
             match String::from_utf8(utf_8_vec)
-            { 
+            {
                 Err(e) => { println!("error while making a string: {}", e); "".to_string()},
                 Ok(string) => string
             }
@@ -50,9 +50,9 @@ pub fn read_stdout_from_command (command: String) -> String {
 }
 
 
-pub fn read_value_from_command <T> (command: String, default: T) -> T 
+pub fn read_value_from_command <T> (command: &str, default: T) -> T 
     where T: std::str::FromStr, <T as FromStr>::Err: Debug {
-    match &*read_stdout_from_command(command.clone()) {
+    match &*read_stdout_from_command(command) {
         "" => { eprint!( "Output was empty for command:\n > {}\n, falling back to default value", 
                          command);
             default } ,

@@ -57,15 +57,4 @@ impl<T: Clone> Watch<T> {
 
         self.inner.on_update.notify_all();
     }
-
-    pub fn get_if_changed(&mut self) -> Option<T> {
-        let lock = self.inner.value.lock().unwrap();
-        if lock.version == self.last_seen_version {
-            None
-        } else {
-            println!("changed! {} != {}", self.last_seen_version, lock.version);
-            self.last_seen_version = lock.version;
-            Some(lock.value.clone())
-        }
-    }
 }

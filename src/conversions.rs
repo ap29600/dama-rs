@@ -47,37 +47,66 @@ impl From<ComboBox> for gtk::ComboBoxText {
             on_update,
             css,
             name,
+            watch,
         } = bx;
 
         let combo = gtk::ComboBoxText::new();
-        let rawoptions = read_stdout_from_command(initialize);
+        let rawoptions = read_stdout_from_command(&*initialize);
         let options = rawoptions
             .split('\n')
             .filter(|&line| !line.is_empty())
             .map(|line| line.to_string())
             .collect::<Vec<_>>();
 
-        let active = options
-            .iter()
-            .position(|entry| {
-                *entry == read_value_from_command(select.clone(), "".to_string())
-            })
-            .map(|i| i as u32);
         for entry in &options {
-            combo.append(None, entry);
+            combo.append(Some(entry), entry);
         }
-        combo.set_active(active);
+
+        let active_value = read_value_from_command(&*select, "".to_string());
+        combo.set_active_id(Some(&active_value));
+
+        if let Some(watch) = watch {
+
+            let moved_select = select.clone();
+
+            let (tx, rx) = glib::MainContext::channel(glib::Priority::default());
+            std::thread::spawn(move ||  {
+                let mut watcher = notify::recommended_watcher(move |res: Result<notify::Event,_>| {
+                    match res {
+                        Ok(event) => match event.kind {
+                            notify::EventKind::Modify(_) => {
+                                let active_value = read_value_from_command(&*moved_select, "".to_string());
+                                tx.send(active_value).ok().unwrap();
+                            },
+                            _ => (),
+                        },
+                        Err(error) => println!("[ERROR] {:?}", error),
+                    }
+                }).unwrap();
+                watcher.watch(Path::new(&watch), RecursiveMode::Recursive).ok();
+                // the thread needs to remain alive, otherwise the watcher will be dropped..
+                loop {
+                    std::thread::yield_now();
+                }
+            });
+
+            let combo_clone = combo.clone();
+            rx.attach(None, move |msg| {
+                // TODO: check if the scale is being dragged, and in that case
+                // avoid changing the value.
+                if !combo_clone.get_state_flags().contains(gtk::StateFlags::ACTIVE | gtk::StateFlags::PRELIGHT) {
+                    combo_clone.set_active_id(Some(&*msg));
+                }
+                glib::Continue(true)
+            });
+        }
+
         combo.connect_changed(move |combo| {
             std::env::set_var("DAMA_VAL", combo.get_active_text().unwrap());
             // if the command was not successful, we run the init script again
             if !execute_shell_command(on_update.clone()) {
-                let now_active = options
-                    .iter()
-                    .position(|entry| {
-                        *entry == read_value_from_command(select.clone(), "".to_string())
-                    })
-                    .map(|i| i as u32);
-                combo.set_active(now_active);
+                let now_active = read_value_from_command(&*select, "".to_string());
+                combo.set_active_id(Some(&now_active));
             }
         });
         add_name!(name, combo);
@@ -98,7 +127,7 @@ impl From<Scale> for gtk::Scale {
         } = sc;
 
         let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, range.low, range.high, 5.);
-        let initial_value = read_value_from_command::<f64>(initialize.clone(), range.low);
+        let initial_value = read_value_from_command::<f64>(&*initialize, range.low);
         scale.set_size_request(250, 12);
         scale.set_value(initial_value);
 
@@ -110,7 +139,7 @@ impl From<Scale> for gtk::Scale {
                     match res {
                         Ok(event) => match event.kind {
                             notify::EventKind::Modify(_) => {
-                                let new_val = read_value_from_command::<f64>(initialize.clone(), range.low);
+                                let new_val = read_value_from_command::<f64>(&*initialize, range.low);
                                 tx.send(new_val).ok().unwrap();
                             },
                             _ => (),
@@ -193,7 +222,7 @@ impl From<CheckBox> for gtk::CheckButton {
         } = cb;
 
         let checkbox = gtk::CheckButton::with_label(&*text);
-        let initial_value = read_value_from_command::<bool>(initialize.clone(), false);
+        let initial_value = read_value_from_command::<bool>(&*initialize, false);
 
         if let Some(watch) = watch {
 
@@ -204,7 +233,7 @@ impl From<CheckBox> for gtk::CheckButton {
                     match res {
                         Ok(event) => match event.kind {
                             notify::EventKind::Modify(_) => {
-                                let new_val = read_value_from_command::<bool>(initialize.clone(), false);
+                                let new_val = read_value_from_command::<bool>(&*initialize, false);
                                 tx.send(new_val).ok().unwrap();
                             },
                             _ => (),

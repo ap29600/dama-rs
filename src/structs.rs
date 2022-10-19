@@ -111,6 +111,7 @@ pub struct ComboBox {
     pub on_update: String,
     pub css: Option<String>,
     pub name: Option<String>,
+    pub watch: Option<String>,
 }
 
 
