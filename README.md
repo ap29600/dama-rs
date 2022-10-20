@@ -3,7 +3,7 @@
 
 ## Desktop Agnostic Menu Aggregate
 
-This program aims to be a hackable, easy to use menu that can be paired to 
+This program aims to be a hackable, easy to use menu that can be paired to
 lightweight window managers in order to change settings on the fly.
 
 **This is a learning experience for me, most of what i'm doing is probably not a best practice.**
@@ -14,9 +14,10 @@ here's a screenshot with the `adapta` gtk theme
 
 ![](assets/screenshot.png)
 
-## feature roadmap
+**branches named with version numbers are frozen releases, though the main branch
+should always be kept functional and backwards compatible**
 
-**version 1.0 has been reached, possibly breaking changes will not occur on the main branch**
+## feature roadmap
 
 changes might still be made to layout styling / anything that doesn't involve user configuration files
 
