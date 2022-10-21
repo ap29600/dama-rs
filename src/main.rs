@@ -11,44 +11,40 @@ mod structs;
 mod ui_builder;
 mod watch;
 
-use helper::get_configuration;
+use helper::{get_config_lines, get_configuration};
 use structs::{Notebook, SerializableWidget};
 use ui_builder::{build_ui, deserialize_from_file};
 
 fn main() {
-
     let mut remaining_args = vec![];
     let pages_from_args = args()
-        .filter_map(|mut arg|
-                    if arg.starts_with("-p:") {
-                        Some(arg.split_off(3))
-                    } else {
-                        remaining_args.push(arg);
-                        None
-                    }
-                    ).collect::<Vec<_>>();
+        .filter_map(|mut arg| {
+            if arg.starts_with("-p:") {
+                Some(arg.split_off(3))
+            } else {
+                remaining_args.push(arg);
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
-    let pages: Vec<SerializableWidget>;
-    let css_path: Option<String>;
-
-    if pages_from_args.is_empty() {
-        let (config_path, css_path_r) = get_configuration();
-        css_path = css_path_r;
+    let (config_path, css_path) = get_configuration();
+    let pages = if pages_from_args.is_empty() {
         let mut config = String::new();
         if let Some(config_path) = config_path {
-            File::open(config_path).ok().map(|mut f| f.read_to_string(&mut config));
-        }
-        pages = config
-            .split('\n')
-            .into_iter()
-            .filter(|&line| !(line.starts_with('#') || line.is_empty()))
+            File::open(config_path)
+                .ok()
+                .map(|mut f| f.read_to_string(&mut config));
+        };
+        get_config_lines(&config)
             .map(deserialize_from_file)
-            .collect::<Vec<_>>()
+            .collect()
     } else {
-        let (_ , css_path_r) = get_configuration();
-        css_path = css_path_r;
-        pages = pages_from_args.iter().map(|s| deserialize_from_file(s)).collect()
-    }
+        pages_from_args
+            .iter()
+            .map(|file| deserialize_from_file(&file))
+            .collect()
+    };
 
     let main_widget = SerializableWidget::Notebook(Notebook {
         css: None,

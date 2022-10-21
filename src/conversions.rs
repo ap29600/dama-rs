@@ -1,10 +1,9 @@
-use std::path::Path;
 use crate::helper::*;
 use crate::structs::*;
 use crate::watch::*;
 use gtk::prelude::*;
-use notify::{Watcher, RecursiveMode};
-use glib;
+use notify::{RecursiveMode, Watcher};
+use std::path::Path;
 
 #[macro_export]
 macro_rules! add_css{
@@ -32,7 +31,7 @@ macro_rules! add_name{
         {
             $(
                 if let Some(name) = $name {
-                    $widget.set_widget_name(&*name);
+                    $widget.set_widget_name(&name);
                 }
             )*
         }
@@ -51,39 +50,33 @@ impl From<ComboBox> for gtk::ComboBoxText {
         } = bx;
 
         let combo = gtk::ComboBoxText::new();
-        let rawoptions = read_stdout_from_command(&*initialize);
-        let options = rawoptions
+        read_stdout_from_command(&initialize)
             .split('\n')
             .filter(|&line| !line.is_empty())
-            .map(|line| line.to_string())
-            .collect::<Vec<_>>();
+            .for_each(|entry| combo.append(Some(entry), entry));
 
-        for entry in &options {
-            combo.append(Some(entry), entry);
-        }
-
-        let active_value = read_value_from_command(&*select, "".to_string());
-        combo.set_active_id(Some(&active_value));
+        let active_value = read_value_from_command::<String>(&select);
+        combo.set_active_id(active_value.as_deref());
 
         if let Some(watch) = watch {
-
             let moved_select = select.clone();
 
             let (tx, rx) = glib::MainContext::channel(glib::Priority::default());
-            std::thread::spawn(move ||  {
-                let mut watcher = notify::recommended_watcher(move |res: Result<notify::Event,_>| {
-                    match res {
-                        Ok(event) => match event.kind {
-                            notify::EventKind::Modify(_) => {
-                                let active_value = read_value_from_command(&*moved_select, "".to_string());
+            std::thread::spawn(move || {
+                let mut watcher =
+                    notify::recommended_watcher(move |res: Result<notify::Event, _>| match res {
+                        Ok(event) => {
+                            if let notify::EventKind::Modify(_) = event.kind {
+                                let active_value = read_value_from_command::<String>(&moved_select);
                                 tx.send(active_value).ok().unwrap();
-                            },
-                            _ => (),
-                        },
+                            }
+                        }
                         Err(error) => println!("[ERROR] {:?}", error),
-                    }
-                }).unwrap();
-                watcher.watch(Path::new(&watch), RecursiveMode::Recursive).ok();
+                    })
+                    .unwrap();
+                watcher
+                    .watch(Path::new(&watch), RecursiveMode::Recursive)
+                    .ok();
                 // the thread needs to remain alive, otherwise the watcher will be dropped..
                 loop {
                     std::thread::yield_now();
@@ -94,8 +87,11 @@ impl From<ComboBox> for gtk::ComboBoxText {
             rx.attach(None, move |msg| {
                 // TODO: check if the scale is being dragged, and in that case
                 // avoid changing the value.
-                if !combo_clone.get_state_flags().contains(gtk::StateFlags::ACTIVE | gtk::StateFlags::PRELIGHT) {
-                    combo_clone.set_active_id(Some(&*msg));
+                if !combo_clone
+                    .get_state_flags()
+                    .contains(gtk::StateFlags::ACTIVE | gtk::StateFlags::PRELIGHT)
+                {
+                    combo_clone.set_active_id(msg.as_deref());
                 }
                 glib::Continue(true)
             });
@@ -104,9 +100,9 @@ impl From<ComboBox> for gtk::ComboBoxText {
         combo.connect_changed(move |combo| {
             std::env::set_var("DAMA_VAL", combo.get_active_text().unwrap());
             // if the command was not successful, we run the init script again
-            if !execute_shell_command(on_update.clone()) {
-                let now_active = read_value_from_command(&*select, "".to_string());
-                combo.set_active_id(Some(&now_active));
+            if !execute_shell_command(&on_update) {
+                let now_active = read_value_from_command::<String>(&select);
+                combo.set_active_id(now_active.as_deref());
             }
         });
         add_name!(name, combo);
@@ -127,27 +123,28 @@ impl From<Scale> for gtk::Scale {
         } = sc;
 
         let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, range.low, range.high, 5.);
-        let initial_value = read_value_from_command::<f64>(&*initialize, range.low);
+        let initial_value = read_value_from_command(&initialize).unwrap_or(range.low);
         scale.set_size_request(250, 12);
         scale.set_value(initial_value);
 
         if let Some(watch) = watch {
-
             let (tx, rx) = glib::MainContext::channel(glib::Priority::default());
-            std::thread::spawn(move ||  {
-                let mut watcher = notify::recommended_watcher(move |res: Result<notify::Event,_>| {
-                    match res {
-                        Ok(event) => match event.kind {
-                            notify::EventKind::Modify(_) => {
-                                let new_val = read_value_from_command::<f64>(&*initialize, range.low);
+            std::thread::spawn(move || {
+                let mut watcher =
+                    notify::recommended_watcher(move |res: Result<notify::Event, _>| match res {
+                        Ok(event) => {
+                            if let notify::EventKind::Modify(_) = event.kind {
+                                let new_val =
+                                    read_value_from_command(&initialize).unwrap_or(range.low);
                                 tx.send(new_val).ok().unwrap();
-                            },
-                            _ => (),
-                        },
+                            }
+                        }
                         Err(error) => println!("[ERROR] {:?}", error),
-                    }
-                }).unwrap();
-                watcher.watch(Path::new(&watch), RecursiveMode::Recursive).ok();
+                    })
+                    .unwrap();
+                watcher
+                    .watch(Path::new(&watch), RecursiveMode::Recursive)
+                    .ok();
                 // the thread needs to remain alive, otherwise the watcher will be dropped..
                 loop {
                     std::thread::yield_now();
@@ -158,7 +155,10 @@ impl From<Scale> for gtk::Scale {
             rx.attach(None, move |msg| {
                 // TODO: check if the scale is being dragged, and in that case
                 // avoid changing the value.
-                if !scale_clone.get_state_flags().contains(gtk::StateFlags::ACTIVE | gtk::StateFlags::PRELIGHT) {
+                if !scale_clone
+                    .get_state_flags()
+                    .contains(gtk::StateFlags::ACTIVE | gtk::StateFlags::PRELIGHT)
+                {
                     scale_clone.set_value(msg);
                 }
                 glib::Continue(true)
@@ -169,7 +169,7 @@ impl From<Scale> for gtk::Scale {
         let mut rx = tx.clone();
         std::thread::spawn(move || loop {
             std::env::set_var("DAMA_VAL", rx.wait().floor().to_string());
-            execute_shell_command(on_update.clone());
+            execute_shell_command(&on_update);
         });
         scale.connect_change_value(move |_, _, new_value| {
             tx.clone().set_value(new_value);
@@ -201,7 +201,7 @@ impl From<Label> for gtk::Label {
         let Label { text, css, name } = lb;
 
         let label = gtk::Label::new(None);
-        label.set_markup(&*text);
+        label.set_markup(&text);
         label.set_line_wrap(true);
         label.set_xalign(0.0);
         add_name!(name, label);
@@ -221,28 +221,28 @@ impl From<CheckBox> for gtk::CheckButton {
             watch,
         } = cb;
 
-        let checkbox = gtk::CheckButton::with_label(&*text);
-        let initial_value = read_value_from_command::<bool>(&*initialize, false);
+        let checkbox = gtk::CheckButton::with_label(&text);
+        let initial_value = read_value_from_command(&initialize).unwrap_or(false);
 
         if let Some(watch) = watch {
-
             let (tx, rx) = glib::MainContext::channel(glib::Priority::default());
 
-            std::thread::spawn(move ||  {
-                let mut watcher = notify::recommended_watcher(move |res: Result<notify::Event,_>| {
-                    match res {
-                        Ok(event) => match event.kind {
-                            notify::EventKind::Modify(_) => {
-                                let new_val = read_value_from_command::<bool>(&*initialize, false);
+            std::thread::spawn(move || {
+                let mut watcher =
+                    notify::recommended_watcher(move |res: Result<notify::Event, _>| match res {
+                        Ok(event) => {
+                            if let notify::EventKind::Modify(_) = event.kind {
+                                let new_val = read_value_from_command(&initialize).unwrap_or(false);
                                 tx.send(new_val).ok().unwrap();
-                            },
-                            _ => (),
-                        },
+                            }
+                        }
                         Err(error) => println!("[ERROR] {:?}", error),
-                    }
-                }).unwrap();
+                    })
+                    .unwrap();
 
-                watcher.watch(Path::new(&watch), RecursiveMode::Recursive).ok();
+                watcher
+                    .watch(Path::new(&watch), RecursiveMode::Recursive)
+                    .ok();
 
                 // the thread needs to remain alive, otherwise the watcher will be dropped..
                 loop {
@@ -257,13 +257,12 @@ impl From<CheckBox> for gtk::CheckButton {
                 }
                 glib::Continue(true)
             });
-
         }
 
         checkbox.set_active(initial_value);
         checkbox.connect_toggled(move |checkbox| {
             std::env::set_var("DAMA_VAL", checkbox.get_active().to_string());
-            execute_shell_command(on_click.clone());
+            execute_shell_command(&on_click);
         });
 
         add_name!(name, checkbox);
@@ -281,8 +280,10 @@ impl From<Button> for gtk::Button {
             name,
         } = bt;
 
-        let button = gtk::Button::with_label(&*text);
-        button.connect_clicked(move |_| {execute_shell_command(on_click.clone());});
+        let button = gtk::Button::with_label(&text);
+        button.connect_clicked(move |_| {
+            execute_shell_command(&on_click);
+        });
         add_name!(name, button);
         add_css!(css, button);
         button

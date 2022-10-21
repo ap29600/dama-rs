@@ -72,8 +72,7 @@ pub fn deserialize_from_file(file_name: &str) -> SerializableWidget {
     // try to read from file
     if std::fs::File::open(file_name)
         .ok()
-        .map(|mut f| f.read_to_string(&mut file_contents).ok())
-        .flatten()
+        .and_then(|mut f| f.read_to_string(&mut file_contents).ok())
         .is_some()
     // the flatten makes sure we catch errors both  opening and reading the file
     {
